@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Faculty Attendance Dashboard</title>
 <style>
-    body {
+     body {
         font-family: 'Segoe UI', sans-serif;
         margin: 0;
         background-color: #f4f6fa;
@@ -104,6 +104,7 @@
         margin-top: 2rem;
     }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -113,51 +114,52 @@
 
 <main>
     <h2>Recent Lectures</h2>
-    <div class="card-container">
-        
-     
-         <!-- Lecture -->
-        <div class="lecture-card">
-            <div class="lecture-title">Cost Accounting – I</div>
-            <div class="lecture-date">Date: 13 Aug 2025</div>
-            <div class="lecture-time">Time: 6:00 PM - 7:00 PM</div>
-            <div class="lecture-stats">Present: 27</div>
-            <a href="attendance-os.html" class="view-btn">View Attendance</a>
-        </div>
-
-        <!-- Lecture -->
-        <div class="lecture-card">
-            <div class="lecture-title">Basics of Service Sector</div>
-            <div class="lecture-date">Date: 13 Aug 2025</div>
-            <div class="lecture-time">Time: 5:00 PM - 6:00 PM</div>
-            <div class="lecture-stats">Present: 29</div>
-            <a href="attendance-se.html" class="view-btn">View Attendance</a>
-        </div>
-
-        <!-- Lecture -->
-        <div class="lecture-card">
-            <div class="lecture-title">Mutual Fund Distributor – I</div>
-            <div class="lecture-date">Date: 12 Aug 2025</div>
-            <div class="lecture-time">Time: 6:00 PM - 7:00 PM</div>
-            <div class="lecture-stats">Present: 27</div>
-            <a href="attendance-os.html" class="view-btn">View Attendance</a>
-        </div>
-
-        <!-- Lecture -->
-        <div class="lecture-card">
-            <div class="lecture-title">Financial Accounting – III</div>
-            <div class="lecture-date">Date: 12 Aug 2025</div>
-            <div class="lecture-time">Time: 5:00 PM - 6:00 PM</div>
-            <div class="lecture-stats">Present: 29</div>
-            <a href="attendance-se.html" class="view-btn">View Attendance</a>
-        </div>
-
-    </div>
+    <div class="card-container" id="lectures-container"></div>
 </main>
 
 <footer>
     &copy; 2025 College Attendance System. For Faculty Use Only.
 </footer>
+
+<script>
+    // Initialize Supabase
+    const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadLectures() {
+        const { data, error } = await supabase
+            .from("lectures") // Replace with your actual table name
+            .select("*")
+            .order("DATE", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching lectures:", error);
+            return;
+        }
+
+        const container = document.getElementById("lectures-container");
+        container.innerHTML = "";
+
+        data.forEach(lecture => {
+            const presentCount = lecture.IDS ? lecture.IDS.split(",").filter(id => id.trim() !== "").length : 0;
+            const card = document.createElement("div");
+            card.classList.add("lecture-card");
+
+            card.innerHTML = `
+                <div class="lecture-title">${lecture.LECTURE}</div>
+                <div class="lecture-date">Date: ${lecture.DATE}</div>
+                <div class="lecture-time">Time: ${lecture.TIME}</div>
+                <div class="lecture-stats">Present: ${presentCount}</div>
+                <a href="attendance.html?no=${lecture.NO}" class="view-btn">View Attendance</a>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    loadLectures();
+</script>
 
 </body>
 </html>
