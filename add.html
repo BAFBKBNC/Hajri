@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Lecture</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        background-color: #f4f6fa;
+        color: #333;
+    }
+
+    header {
+        background-color: #243b8f;
+        color: white;
+        padding: 1rem 2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    main {
+        padding: 2rem;
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-top: 1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+    }
+
+    .student-search {
+        margin-bottom: 1rem;
+    }
+
+    .student-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 0.5rem;
+    }
+
+    .student-item {
+        display: flex;
+        align-items: center;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .student-item:last-child {
+        border-bottom: none;
+    }
+
+    .submit-btn {
+        background-color: #243b8f;
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .submit-btn:hover {
+        background-color: #1b2e6d;
+    }
+</style>
+<script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co"; // replace
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg"; // replace
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const studentListEl = document.getElementById("student-list");
+    const searchInput = document.getElementById("student-search");
+
+    let students = [];
+
+    async function loadStudents() {
+        const { data, error } = await supabase
+            .from("students") // replace with your table name
+            .select("*")
+            .order("NAME");
+
+        if (error) {
+            console.error("Error fetching students:", error);
+            return;
+        }
+
+        students = data;
+        renderStudents(students);
+    }
+
+    function renderStudents(list) {
+        studentListEl.innerHTML = "";
+        list.forEach(stu => {
+            const div = document.createElement("div");
+            div.classList.add("student-item");
+            div.innerHTML = `
+                <input type="checkbox" value="${stu.ID}">
+                <span style="margin-left: 0.5rem;">${stu.NAME}</span>
+            `;
+            studentListEl.appendChild(div);
+        });
+    }
+
+    searchInput.addEventListener("input", () => {
+        const term = searchInput.value.toLowerCase();
+        const filtered = students.filter(s => s.NAME.toLowerCase().includes(term));
+        renderStudents(filtered);
+    });
+
+    document.getElementById("lecture-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("lecture-name").value;
+        const date = document.getElementById("lecture-date").value;
+        const start = document.getElementById("start-time").value;
+        const end = document.getElementById("end-time").value;
+
+        const selectedIds = Array.from(studentListEl.querySelectorAll("input[type=checkbox]:checked"))
+            .map(cb => cb.value)
+            .join(",");
+
+        const { error } = await supabase
+            .from("lectures") // replace with your table name
+            .insert([{
+                DATE: date,
+                TIME: `${start} - ${end}`,
+                LECTURE: name,
+                IDS: selectedIds
+            }]);
+
+        if (error) {
+            alert("Error adding lecture: " + error.message);
+        } else {
+            alert("Lecture added successfully!");
+            document.getElementById("lecture-form").reset();
+            renderStudents(students);
+        }
+    });
+
+    window.addEventListener("DOMContentLoaded", loadStudents);
+</script>
+</head>
+<body>
+
+<header>
+    <h1>Add New Lecture</h1>
+</header>
+
+<main>
+    <form id="lecture-form">
+        <label for="lecture-name">Lecture Name</label>
+        <input type="text" id="lecture-name" required>
+
+        <label for="lecture-date">Date</label>
+        <input type="date" id="lecture-date" required>
+
+        <label for="start-time">Start Time</label>
+        <input type="time" id="start-time" required>
+
+        <label for="end-time">End Time</label>
+        <input type="time" id="end-time" required>
+
+        <label for="student-search">Search Students</label>
+        <input type="text" id="student-search" placeholder="Search by name" class="student-search">
+
+        <div id="student-list" class="student-list"></div>
+
+        <button type="submit" class="submit-btn">Save Lecture</button>
+    </form>
+</main>
+
+</body>
+</html>
