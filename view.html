@@ -138,4 +138,25 @@
 function filterTable() {
     let input = document.getElementById("searchInput");
     let filter = input.value.toLowerCase();
-    let table = document.getElementById("studentsTab
+    let table = document.getElementById("studentsTable");
+    let tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) {
+        let tdRoll = tr[i].getElementsByTagName("td")[0];
+        let tdName = tr[i].getElementsByTagName("td")[1];
+        if (tdRoll && tdName) {
+            let txtValueRoll = tdRoll.textContent || tdRoll.innerText;
+            let txtValueName = tdName.textContent || tdName.innerText;
+            if (txtValueRoll.toLowerCase().indexOf(filter) > -1 || 
+                txtValueName.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }       
+    }
+}
+</script>
+
+</body>
+</html>
