@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty Attendance Dashboard</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        background-color: #f4f6fa;
+        color: #333;
+    }
+
+    header {
+        background-color: #243b8f;
+        color: white;
+        padding: 1rem 2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+
+    main {
+        padding: 2rem;
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    h2 {
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        color: #222;
+    }
+
+    .card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .lecture-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .lecture-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .lecture-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    .lecture-date {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.3rem;
+    }
+
+    .lecture-time {
+        font-size: 0.9rem;
+        color: #888;
+        margin-bottom: 1rem;
+    }
+
+    .lecture-stats {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #2a7a1f;
+        margin-bottom: 1rem;
+    }
+
+    .view-btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: #243b8f;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    .view-btn:hover {
+        background-color: #1b2e6d;
+    }
+
+    footer {
+        text-align: center;
+        padding: 1rem;
+        font-size: 0.85rem;
+        color: #777;
+        margin-top: 2rem;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>ClassCount</h1>
+</header>
+
+<main>
+    <h2>Recent Lectures</h2>
+    <div class="card-container">
+        
+     
+         <!-- Lecture -->
+        <div class="lecture-card">
+            <div class="lecture-title">Cost Accounting – I</div>
+            <div class="lecture-date">Date: 13 Aug 2025</div>
+            <div class="lecture-time">Time: 6:00 PM - 7:00 PM</div>
+            <div class="lecture-stats">Present: 27</div>
+            <a href="attendance-os.html" class="view-btn">View Attendance</a>
+        </div>
+
+        <!-- Lecture -->
+        <div class="lecture-card">
+            <div class="lecture-title">Basics of Service Sector</div>
+            <div class="lecture-date">Date: 13 Aug 2025</div>
+            <div class="lecture-time">Time: 5:00 PM - 6:00 PM</div>
+            <div class="lecture-stats">Present: 29</div>
+            <a href="attendance-se.html" class="view-btn">View Attendance</a>
+        </div>
+
+        <!-- Lecture -->
+        <div class="lecture-card">
+            <div class="lecture-title">Mutual Fund Distributor – I</div>
+            <div class="lecture-date">Date: 12 Aug 2025</div>
+            <div class="lecture-time">Time: 6:00 PM - 7:00 PM</div>
+            <div class="lecture-stats">Present: 27</div>
+            <a href="attendance-os.html" class="view-btn">View Attendance</a>
+        </div>
+
+        <!-- Lecture -->
+        <div class="lecture-card">
+            <div class="lecture-title">Financial Accounting – III</div>
+            <div class="lecture-date">Date: 12 Aug 2025</div>
+            <div class="lecture-time">Time: 5:00 PM - 6:00 PM</div>
+            <div class="lecture-stats">Present: 29</div>
+            <a href="attendance-se.html" class="view-btn">View Attendance</a>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    &copy; 2025 College Attendance System. For Faculty Use Only.
+</footer>
+
+</body>
+</html>
