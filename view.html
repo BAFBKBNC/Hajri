@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Present Students - Database Systems</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        background-color: #f4f6fa;
+        color: #333;
+    }
+
+    header {
+        background-color: #243b8f;
+        color: white;
+        padding: 1rem 2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+
+    main {
+        padding: 2rem;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .card h2 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1.3rem;
+        color: #222;
+    }
+
+    .lecture-info {
+        font-size: 0.95rem;
+        color: #555;
+        margin-bottom: 1rem;
+    }
+
+    .search-box {
+        margin-bottom: 1rem;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.6rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.5rem;
+    }
+
+    th, td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f0f2f5;
+        font-weight: 600;
+    }
+
+    .back-btn {
+        display: inline-block;
+        margin-top: 1.5rem;
+        padding: 0.5rem 1rem;
+        background-color: #243b8f;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    .back-btn:hover {
+        background-color: #1b2e6d;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Present Students</h1>
+</header>
+
+<main>
+    <div class="card">
+        <h2>Database Systems</h2>
+        <div class="lecture-info">Date: 13 Aug 2025 | Time: 10:00 AM - 11:00 AM</div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by roll number or name..." onkeyup="filterTable()">
+        </div>
+
+        <table id="studentsTable">
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>101</td><td>Aarav Sharma</td></tr>
+                <tr><td>103</td><td>Rahul Mehta</td></tr>
+                <tr><td>104</td><td>Neha Singh</td></tr>
+                <tr><td>107</td><td>Rohan Das</td></tr>
+                <tr><td>110</td><td>Priya Nair</td></tr>
+                <tr><td>114</td><td>Vikram Joshi</td></tr>
+            </tbody>
+        </table>
+
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+</main>
+
+<script>
+function filterTable() {
+    let input = document.getElementById("searchInput");
+    let filter = input.value.toLowerCase();
+    let table = document.getElementById("studentsTab
