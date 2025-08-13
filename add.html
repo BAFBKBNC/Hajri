@@ -49,23 +49,49 @@
     }
 
     .student-list {
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 0.5rem;
-    }
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0;
+    background-color: white;
+}
 
-    .student-item {
-        display: flex;
-        align-items: center;
-        padding: 0.4rem 0;
-        border-bottom: 1px solid #eee;
-    }
+.student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
 
-    .student-item:last-child {
-        border-bottom: none;
-    }
+.student-item:last-child {
+    border-bottom: none;
+}
+
+.student-item:hover {
+    background-color: #f9f9ff;
+}
+
+.student-item.selected {
+    background-color: #e6f3ff;
+}
+
+.student-name {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.student-checkbox {
+    margin-left: 1rem;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
 
     .submit-btn {
         background-color: #243b8f;
@@ -109,17 +135,34 @@
     }
 
     function renderStudents(list) {
-        studentListEl.innerHTML = "";
-        list.forEach(stu => {
-            const div = document.createElement("div");
-            div.classList.add("student-item");
-            div.innerHTML = `
-                <input type="checkbox" value="${stu.ID}">
-                <span style="margin-left: 0.5rem;">${stu.NAME}</span>
-            `;
-            studentListEl.appendChild(div);
+    studentListEl.innerHTML = "";
+    list.forEach(stu => {
+        const div = document.createElement("div");
+        div.classList.add("student-item");
+
+        div.innerHTML = `
+            <span class="student-name">${stu.NAME}</span>
+            <input type="checkbox" value="${stu.ID}" class="student-checkbox">
+        `;
+
+        // Highlight row when checkbox changes
+        const checkbox = div.querySelector("input");
+        checkbox.addEventListener("change", () => {
+            div.classList.toggle("selected", checkbox.checked);
         });
-    }
+
+        // Clicking anywhere in the row toggles the checkbox
+        div.addEventListener("click", (e) => {
+            if (e.target.tagName !== "INPUT") {
+                checkbox.checked = !checkbox.checked;
+                div.classList.toggle("selected", checkbox.checked);
+            }
+        });
+
+        studentListEl.appendChild(div);
+    });
+}
+
 
     searchInput.addEventListener("input", () => {
         const term = searchInput.value.toLowerCase();
