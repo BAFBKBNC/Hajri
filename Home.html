@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Faculty Attendance Dashboard</title>
+<title>ClassCount</title>
 <style>
      body {
         font-family: 'Segoe UI', sans-serif;
@@ -118,7 +118,7 @@
 </main>
 
 <footer>
-    &copy; 2025 College Attendance System. For Faculty Use Only.
+    Made by Developers of BAFs App.
 </footer>
 
 <script>
@@ -151,7 +151,7 @@
                 <div class="lecture-date">Date: ${lecture.DATE}</div>
                 <div class="lecture-time">Time: ${lecture.TIME}</div>
                 <div class="lecture-stats">Present: ${presentCount}</div>
-                <a href="attendance.html?no=${lecture.NO}" class="view-btn">View Attendance</a>
+                <a href="view.html?no=${lecture.NO}" class="view-btn">View Attendance</a>
             `;
 
             container.appendChild(card);
