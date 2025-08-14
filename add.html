@@ -40,6 +40,37 @@
   .submit-btn:hover { background:#1b2e6d; }
   .row { display:flex; gap:10px; }
   @media (min-width: 640px) { .row-2 > * { flex:1; } }
+
+/* Make period/time appear on new line */
+.lecture-title {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.lecture-time {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 2px; /* small gap between title and time */
+}
+
+/* Space between list and button */
+.student-list {
+    margin-bottom: 20px; /* pushes button down */
+}
+
+.save-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+
 </style>
 
 <script type="module">
@@ -163,7 +194,7 @@ window.addEventListener("DOMContentLoaded", loadStudents);
 </script>
 </head>
 <body>
-<header><h1>Add New Lecture</h1></header>
+<header><h1>ClassCount</h1></header>
 
 <main>
   <form id="lecture-form">
