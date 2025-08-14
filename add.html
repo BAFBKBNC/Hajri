@@ -3,10 +3,22 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Add Lecture</title>
+<title>ClassCount</title>
 <style>
   body { font-family: 'Segoe UI', sans-serif; margin:0; background:#f4f6fa; color:#333; }
-  header { background:#243b8f; color:#fff; padding:1rem 2rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+  header {
+  background: #243b8f;
+  color: #fff;
+  padding: 1rem 1rem; /* reduced vertical + horizontal padding */
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+header h1 {
+  font-size: 1.4rem; /* slightly smaller text */
+  margin: 0; /* removes extra space from default margins */
+}
+
   main { padding:1rem; max-width:800px; margin:auto; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
 
   label { display:block; font-weight:600; margin-top:1rem; margin-bottom:.35rem; }
@@ -68,6 +80,12 @@
     border-radius: 6px;
     font-size: 1rem;
     cursor: pointer;
+}
+.row.row-2 {
+  flex-direction: column;
+}
+.row.row-2 > * {
+  flex: unset;
 }
 
 
