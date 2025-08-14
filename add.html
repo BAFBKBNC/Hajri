@@ -51,12 +51,10 @@
     .student-item {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         padding: 0.6rem 0.8rem;
         cursor: pointer;
         border-bottom: 1px solid #f0f0f0;
         transition: background-color 0.2s ease;
-        flex-wrap: wrap;
     }
     .student-item:last-child {
         border-bottom: none;
@@ -68,15 +66,16 @@
         background-color: #e6f3ff;
     }
     .student-name {
-        flex: 1 1 auto;
+        flex-grow: 1;
         font-size: 1rem;
         font-weight: 500;
         color: #333;
-        word-break: break-word;
-        margin-right: 10px;
+        word-break: break-word; /* Allows full wrapping */
+        padding-right: 10px;
     }
     .student-checkbox {
-        flex: 0 0 auto;
+        flex-shrink: 0;
+        margin-left: auto; /* Push to far right */
         transform: scale(1.3);
         cursor: pointer;
     }
@@ -128,12 +127,16 @@
             div.classList.add("student-item");
             const checked = selectedIdsSet.has(stu.ID);
 
-            div.innerHTML = `
-                <span class="student-name">${stu.NAME}</span>
-                <input type="checkbox" value="${stu.ID}" class="student-checkbox" ${checked ? "checked" : ""}>
-            `;
+            const nameSpan = document.createElement("span");
+            nameSpan.classList.add("student-name");
+            nameSpan.textContent = stu.NAME;
 
-            const checkbox = div.querySelector("input");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = stu.ID;
+            checkbox.classList.add("student-checkbox");
+            checkbox.checked = checked;
+
             if (checked) div.classList.add("selected");
 
             checkbox.addEventListener("change", () => {
@@ -152,6 +155,8 @@
                 }
             });
 
+            div.appendChild(nameSpan);
+            div.appendChild(checkbox);
             studentListEl.appendChild(div);
         });
     }
@@ -195,9 +200,10 @@
             return;
         }
 
-        // Increment ATTENDED for each selected student
-        for (const id of selectedIds) {
-            await supabase.rpc('increment_attended', { student_id: id });
+        // Increment ATTENDED for selected students via bulk RPC
+        const { error: rpcError } = await supabase.rpc('increment_attended_bulk', { ids: selectedIds });
+        if (rpcError) {
+            console.error("Error updating attendance:", rpcError);
         }
 
         alert("Lecture added and attendance updated!");
