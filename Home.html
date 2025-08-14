@@ -131,7 +131,7 @@
         const { data, error } = await supabase
             .from("lectures") // Replace with your actual table name
             .select("*")
-            .order("DATE", { ascending: false });
+            .order("NO", { ascending: false });
 
         if (error) {
             console.error("Error fetching lectures:", error);
