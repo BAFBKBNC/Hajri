@@ -110,7 +110,7 @@
         const { data, error } = await supabase
             .from("students")
             .select("*")
-            .order("NAME");
+            .order("name");
 
         if (error) {
             console.error("Error fetching students:", error);
@@ -129,7 +129,7 @@
 
             const nameSpan = document.createElement("span");
             nameSpan.classList.add("student-name");
-            nameSpan.textContent = stu.NAME;
+            nameSpan.textContent = stu.name;
 
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
