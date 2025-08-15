@@ -7,26 +7,21 @@
 <style>
   body { font-family: 'Segoe UI', sans-serif; margin:0; background:#f4f6fa; color:#333; }
   header {
-  background: #243b8f;
-  color: #fff;
-  padding: 1rem 1rem; /* reduced vertical + horizontal padding */
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
-}
-
-header h1 {
-  font-size: 1.4rem; /* slightly smaller text */
-  margin: 0; /* removes extra space from default margins */
-}
-
+    background: #243b8f;
+    color: #fff;
+    padding: 1rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1 {
+    font-size: 1.4rem;
+    margin: 0;
+  }
   main { padding:1rem; max-width:800px; margin:auto; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
-
   label { display:block; font-weight:600; margin-top:1rem; margin-bottom:.35rem; }
   select, input[type="date"], input[type="text"] {
     width:100%; padding:.65rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; margin-bottom:1rem;
   }
-
-  /* Student list */
   .student-list { max-height:50vh; overflow-y:auto; border:1px solid #ccc; border-radius:8px; background:#fff; }
   .student-item {
     display:flex; align-items:center; gap:12px;
@@ -38,74 +33,48 @@ header h1 {
   .student-item.selected { background:#e6f3ff; }
   .student-name {
     flex:1 1 auto;
-    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;  /* perfectly horizontal */
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
     font-size:1rem; font-weight:500; color:#333;
   }
   .student-badge {
     flex:0 0 auto; font-size:.8rem; padding:.15rem .5rem; border-radius:999px; border:1px solid #d0d7ff;
     background:#eef2ff; color:#243b8f;
   }
-
   .submit-btn {
     width:100%; background:#243b8f; color:#fff; padding:.9rem 1.2rem; border:none; border-radius:8px; font-weight:700; cursor:pointer;
   }
   .submit-btn:hover { background:#1b2e6d; }
   .row { display:flex; gap:10px; }
   @media (min-width: 640px) { .row-2 > * { flex:1; } }
-
-/* Make period/time appear on new line */
-.lecture-title {
-    font-size: 1rem;
-    font-weight: bold;
-}
-
-.lecture-time {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 2px; /* small gap between title and time */
-}
-
-/* Space between list and button */
-.student-list {
-    margin-bottom: 20px; /* pushes button down */
-}
-
-.save-btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-}
-.row.row-2 {
-  flex-direction: column;
-}
-.row.row-2 > * {
-  flex: unset;
-}
-
-
+  .lecture-title { font-size: 1rem; font-weight: bold; }
+  .lecture-time { font-size: 0.9rem; color: #666; margin-top: 2px; }
+  .student-list { margin-bottom: 20px; }
+  .save-btn { display: block; width: 100%; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+  .row.row-2 { flex-direction: column; }
+  .row.row-2 > * { flex: unset; }
+  #qr-reader { margin-top:10px; border:1px solid #ccc; border-radius:8px; }
 </style>
+
+<!-- QR Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-/* === Your Supabase project === */
 const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg"; // keep this safe
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* DOM refs */
+/* DOM Refs */
 const listEl = document.getElementById("student-list");
 const searchEl = document.getElementById("student-search");
 
 /* State */
 let students = [];
-const selectedIds = new Set(); // keep IDs selected (persist through filter)
+const selectedIds = new Set();
+
+/* Beep sound (short deep tone) */
+const beepSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSQAAAAA");
 
 /* Helpers */
 const toDDMMYYYY = (yyyy_mm_dd) => {
@@ -122,28 +91,27 @@ function render(list) {
     const name = document.createElement("span");
     name.className = "student-name";
     name.textContent = stu.name;
-    name.title = stu.name; // full on hover
+    name.title = stu.name;
 
     const badge = document.createElement("span");
     badge.className = "student-badge";
     badge.textContent = selectedIds.has(stu.id) ? "Selected" : "Tap to select";
 
-    item.addEventListener("click", () => {
-      if (selectedIds.has(stu.id)) {
-        selectedIds.delete(stu.id);
-        item.classList.remove("selected");
-        badge.textContent = "Tap to select";
-      } else {
-        selectedIds.add(stu.id);
-        item.classList.add("selected");
-        badge.textContent = "Selected";
-      }
-    });
+    item.addEventListener("click", () => toggleSelect(stu.id));
 
     item.appendChild(name);
     item.appendChild(badge);
     listEl.appendChild(item);
   }
+}
+
+function toggleSelect(id) {
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+  } else {
+    selectedIds.add(id);
+  }
+  render(students);
 }
 
 async function loadStudents() {
@@ -164,11 +132,33 @@ searchEl.addEventListener("input", () => {
   render(students.filter(s => s.name.toLowerCase().includes(q)));
 });
 
+/* QR Scanner */
+document.getElementById("start-qr-btn").addEventListener("click", () => {
+  const qrReader = document.getElementById("qr-reader");
+  qrReader.style.display = "block";
+
+  const html5QrCode = new Html5Qrcode("qr-reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    qrCodeMessage => {
+      const scannedId = parseInt(qrCodeMessage, 10);
+      if (!isNaN(scannedId) && !selectedIds.has(scannedId)) {
+        selectedIds.add(scannedId);
+        render(students);
+        beepSound.play();
+      }
+    },
+    () => {}
+  ).catch(err => console.error("QR start failed", err));
+});
+
+/* Form submit */
 document.getElementById("lecture-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const lectureName = document.getElementById("lecture-name").value;
-  const dateISO = document.getElementById("lecture-date").value; // yyyy-mm-dd
+  const dateISO = document.getElementById("lecture-date").value;
   const period = document.getElementById("lecture-period").value;
 
   if (!lectureName || !dateISO || !period) {
@@ -176,10 +166,9 @@ document.getElementById("lecture-form").addEventListener("submit", async (e) => 
     return;
   }
 
-  const idsArr = Array.from(selectedIds).map(Number); // bigint[] expects numbers
+  const idsArr = Array.from(selectedIds).map(Number);
   const DATE = toDDMMYYYY(dateISO);
 
-  // 1) Insert lecture row (columns are UPPERCASE in your lectures table)
   const { error: insertErr } = await supabase.from("lectures").insert([{
     DATE,
     TIME: period,
@@ -192,7 +181,6 @@ document.getElementById("lecture-form").addEventListener("submit", async (e) => 
     return;
   }
 
-  // 2) Increment attendance via RPC (no PATCH/UPDATE here)
   if (idsArr.length) {
     const { error: rpcErr } = await supabase.rpc("increment_attended_bulk", { ids: idsArr });
     if (rpcErr) {
@@ -204,8 +192,8 @@ document.getElementById("lecture-form").addEventListener("submit", async (e) => 
 
   alert("Lecture saved and attendance updated!");
   selectedIds.clear();
-  (document.getElementById("lecture-form")).reset();
-  render(students); // keep list visible, selections cleared
+  document.getElementById("lecture-form").reset();
+  render(students);
 });
 
 window.addEventListener("DOMContentLoaded", loadStudents);
@@ -230,13 +218,11 @@ window.addEventListener("DOMContentLoaded", loadStudents);
     </select>
 
     <div class="row row-2">
-      <div style="flex:1">
+      <div>
         <label for="lecture-date">Date</label>
         <input type="date" id="lecture-date" required />
       </div>
-
-      
-      <div style="flex:1">
+      <div>
         <label for="lecture-period">Period</label>
         <select id="lecture-period" required>
           <option value="">-- Select Period --</option>
@@ -250,8 +236,13 @@ window.addEventListener("DOMContentLoaded", loadStudents);
     <label for="student-search">Search Students</label>
     <input type="text" id="student-search" placeholder="Search by name" />
 
-    <div id="student-list" class="student-list"></div>
+    <!-- QR Scanner -->
+    <div>
+      <button type="button" id="start-qr-btn">Start QR Scanner</button>
+      <div id="qr-reader" style="width:100%; max-width:400px; display:none;"></div>
+    </div>
 
+    <div id="student-list" class="student-list"></div>
     <button type="submit" class="submit-btn">Save Lecture</button>
   </form>
 </main>
