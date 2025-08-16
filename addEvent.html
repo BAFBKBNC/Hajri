@@ -174,10 +174,10 @@ document.getElementById("event-form").addEventListener("submit", async (e) => {
   const idsArr = Array.from(selectedIds).map(Number);
   const DATE = toDDMMYYYY(dateISO);
 
-  // Insert into events table
+  // ✅ Insert into events table (no NO)
   const { data: inserted, error: insertErr } = await supabase
     .from("events")
-    .insert([{ DATE, TIME: period, EVENTS: eventName, IDS: idsArr.length ? idsArr.join(",") : "EMPTY" }])
+    .insert([{ DATE, TIME: period, EVENTS: eventName, IDS: idsArr.join(",") || "EMPTY" }])
     .select();
 
   if (insertErr) {
@@ -187,17 +187,11 @@ document.getElementById("event-form").addEventListener("submit", async (e) => {
 
   const eventNo = inserted[0].NO;
 
-  // Update students.events column
+  // ✅ Update students.events column
   for (let sid of idsArr) {
-    const { data: stu, error: stuErr } = await supabase
-      .from("students")
-      .select("events")
-      .eq("id", sid)
-      .single();
+    const { data: stu } = await supabase.from("students").select("events").eq("id", sid).single();
 
-    if (stuErr) continue;
-
-    let newEvents = stu.events ? stu.events.split(",").map(e => e.trim()).filter(e => e) : [];
+    let newEvents = stu?.events ? stu.events.split(",").map(e => e.trim()).filter(e => e) : [];
     if (!newEvents.includes(String(eventNo))) {
       newEvents.push(String(eventNo));
     }
@@ -208,8 +202,9 @@ document.getElementById("event-form").addEventListener("submit", async (e) => {
   alert("Event saved and students updated!");
   selectedIds.clear();
   document.getElementById("event-form").reset();
-  render(students);
+  await loadStudents(); // ✅ Refresh latest data
 });
+
 
 window.addEventListener("DOMContentLoaded", loadStudents);
 </script>
