@@ -150,16 +150,27 @@ document.getElementById("start-qr-btn").addEventListener("click", () => {
   const qrReader = document.getElementById("qr-reader");
   qrReader.style.display = "block";
 
+  const beepSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg"); // ✅ Google beep
+
   const html5QrCode = new Html5Qrcode("qr-reader");
   html5QrCode.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
     qrCodeMessage => {
       const scannedId = parseInt(qrCodeMessage, 10);
-      if (!isNaN(scannedId) && !selectedIds.has(scannedId)) {
-        selectedIds.add(scannedId);
-        render(students);
-        beepSound.play();
+
+      // ✅ Only allow IDs that exist in student list
+      const validStudent = students.find(s => s.id === scannedId);
+
+      if (validStudent) {
+        if (!selectedIds.has(scannedId)) {
+          selectedIds.add(scannedId);
+          render(students);
+          beepSound.play(); // ✅ Beep only on first valid scan
+        }
+        // Duplicate scan → ignored silently
+      } else {
+        alert("Scanned ID not found in student list!");
       }
     },
     () => {}
