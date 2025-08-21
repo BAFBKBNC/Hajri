@@ -16,7 +16,7 @@
   header h1 { font-size: 1.4rem; margin: 0; }
   main { padding:1rem; max-width:800px; margin:auto; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
   label { display:block; font-weight:600; margin-top:1rem; margin-bottom:.35rem; }
-  select, input[type="date"], input[type="text"] {
+  select, input[type="date"], input[type="text"], input[type="time"] {
     width:100%; padding:.65rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; margin-bottom:1rem;
   }
   .student-list { max-height:50vh; overflow-y:auto; border:1px solid #ccc; border-radius:8px; background:#fff; }
@@ -45,7 +45,7 @@
   @media (min-width: 640px) { .row-2 > * { flex:1; } }
   .student-list { margin-bottom: 20px; }
   #qr-reader { margin-top:10px; border:1px solid #ccc; border-radius:8px; }
-  #start-qr-btn {
+  #start-qr-btn, #close-qr-btn {
     background:#4CAF50;
     color:white;
     font-weight:600;
@@ -55,10 +55,11 @@
     cursor:pointer;
     font-size:1rem;
     transition: background 0.2s ease;
-    display:block;
-    margin: 0 auto;
+    margin: 0.3rem;
   }
-  #start-qr-btn:hover { background:#3e8e41; }
+  #start-qr-btn:hover, #close-qr-btn:hover { background:#3e8e41; }
+  #close-qr-btn { background:#e74c3c; }
+  #close-qr-btn:hover { background:#c0392b; }
 </style>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -76,11 +77,19 @@ const searchEl = document.getElementById("student-search");
 let students = [];
 const selectedIds = new Set();
 const beepSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let html5QrCode = null;
 
 const toDDMMYYYY = (yyyy_mm_dd) => {
   const [y,m,d] = yyyy_mm_dd.split("-");
   return `${d}/${m}/${y}`;
 };
+
+function to12HourFormat(timeStr) {
+  let [hour, minute] = timeStr.split(":").map(Number);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour}:${minute.toString().padStart(2, "0")} ${ampm}`;
+}
 
 function render(list) {
   listEl.innerHTML = "";
@@ -135,8 +144,9 @@ searchEl.addEventListener("input", () => {
 document.getElementById("start-qr-btn").addEventListener("click", () => {
   const qrReader = document.getElementById("qr-reader");
   qrReader.style.display = "block";
+  document.getElementById("close-qr-btn").style.display = "inline-block";
 
-  const html5QrCode = new Html5Qrcode("qr-reader");
+  html5QrCode = new Html5Qrcode("qr-reader");
   html5QrCode.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
@@ -158,23 +168,34 @@ document.getElementById("start-qr-btn").addEventListener("click", () => {
   ).catch(err => console.error("QR start failed", err));
 });
 
+document.getElementById("close-qr-btn").addEventListener("click", async () => {
+  if (html5QrCode) {
+    await html5QrCode.stop().catch(err => console.error("Stop failed", err));
+    html5QrCode.clear();
+    html5QrCode = null;
+  }
+  document.getElementById("qr-reader").style.display = "none";
+  document.getElementById("close-qr-btn").style.display = "none";
+});
+
 /* Save Event */
 document.getElementById("event-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const eventName = document.getElementById("event-name").value;
   const dateISO = document.getElementById("event-date").value;
-  const period = document.getElementById("event-time").value;
+  const startTime = document.getElementById("event-start-time").value;
+  const endTime = document.getElementById("event-end-time").value;
 
-  if (!eventName || !dateISO || !period) {
+  if (!eventName || !dateISO || !startTime || !endTime) {
     alert("Please fill all fields.");
     return;
   }
 
+  const period = `${to12HourFormat(startTime)} – ${to12HourFormat(endTime)}`;
   const idsArr = Array.from(selectedIds).map(Number);
   const DATE = toDDMMYYYY(dateISO);
 
-  // ✅ Insert into events table (no NO)
   const { data: inserted, error: insertErr } = await supabase
     .from("events")
     .insert([{ DATE, TIME: period, EVENTS: eventName, IDS: idsArr.join(",") || "EMPTY" }])
@@ -187,7 +208,6 @@ document.getElementById("event-form").addEventListener("submit", async (e) => {
 
   const eventNo = inserted[0].NO;
 
-  // ✅ Update students.events column
   for (let sid of idsArr) {
     const { data: stu } = await supabase.from("students").select("events").eq("id", sid).single();
 
@@ -202,9 +222,8 @@ document.getElementById("event-form").addEventListener("submit", async (e) => {
   alert("Event saved and students updated!");
   selectedIds.clear();
   document.getElementById("event-form").reset();
-  await loadStudents(); // ✅ Refresh latest data
+  await loadStudents();
 });
-
 
 window.addEventListener("DOMContentLoaded", loadStudents);
 </script>
@@ -222,9 +241,16 @@ window.addEventListener("DOMContentLoaded", loadStudents);
         <label for="event-date">Date</label>
         <input type="date" id="event-date" required />
       </div>
+    </div>
+
+    <div class="row row-2">
       <div>
-        <label for="event-time">Time</label>
-        <input type="text" id="event-time" required placeholder="e.g. 7:00 AM - 9:00 AM" />
+        <label for="event-start-time">Start Time</label>
+        <input type="time" id="event-start-time" required />
+      </div>
+      <div>
+        <label for="event-end-time">End Time</label>
+        <input type="time" id="event-end-time" required />
       </div>
     </div>
 
@@ -234,6 +260,7 @@ window.addEventListener("DOMContentLoaded", loadStudents);
     <!-- QR Scanner -->
     <div style="margin-bottom:1rem; text-align:center;">
       <button type="button" id="start-qr-btn">Start QR Scanner</button>
+      <button type="button" id="close-qr-btn" style="display:none;">Close QR</button>
       <div id="qr-reader" style="width:100%; max-width:400px; display:none; margin:auto;"></div>
     </div>
 
