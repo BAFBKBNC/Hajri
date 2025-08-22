@@ -26,6 +26,33 @@
   }
   .lecture-info h2 { margin: 0; font-size: 1.2rem; color: #243b8f; }
   .lecture-info p { margin: 0.2rem 0 0; font-size: 0.95rem; color: #555; }
+  
+  /* NEW: Filter controls */
+  .filter-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+  }
+  .filter-btn {
+    flex-grow: 1;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .filter-btn:hover { background-color: #e9e9e9; }
+  .filter-btn.active {
+    background-color: #243b8f;
+    color: white;
+    border-color: #243b8f;
+  }
 
   .student-list { border:1px solid #ccc; border-radius:8px; overflow: hidden; }
   .student-item {
@@ -34,89 +61,161 @@
   }
   .student-item:last-child { border-bottom:none; }
   .student-name { font-weight:500; color:#333; }
-  .badge {
-    font-size:0.8rem; padding:0.25rem 0.6rem; border-radius:999px;
+
+  /* MODIFIED: Status toggle button */
+  .status-toggle {
+    font-size:0.8rem;
+    padding:0.4rem 0.8rem;
+    border-radius:999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+    min-width: 80px; /* Ensures consistent width */
+    text-align: center;
+    transition: all 0.2s ease;
   }
-  .badge-present { background:#e6f8e9; color:#2e7d32; border:1px solid #a5d6a7; }
-  .badge-absent { background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
+  .status-toggle.present { background:#e6f8e9; color:#2e7d32; border-color:#a5d6a7; }
+  .status-toggle.present:hover { background: #c8e6c9; }
+  .status-toggle.absent { background:#ffebee; color:#c62828; border-color:#ef9a9a; }
+  .status-toggle.absent:hover { background: #ffcdd2; }
+  .status-toggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 
   .back-btn {
     display:inline-block; margin-top:1rem;
     background:#243b8f; color:white; padding:0.6rem 1.2rem;
     border-radius:6px; text-decoration:none; font-weight:600;
   }
-  .back-btn:hover { background:#1b2e6d; }
 </style>
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+const SUPABASE_KEY = "eyJhbGciOiJI" + "UzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const params = new URLSearchParams(window.location.search);
-const lectureNo = params.get("no");
+const lectureNo = parseInt(params.get("no"), 10);
 
+// --- State Management ---
+let allStudents = [];
+let currentFilter = 'all';
+
+// --- DOM Elements ---
+const listEl = document.getElementById("student-list");
+const filterControls = document.querySelector(".filter-controls");
+
+// --- Main Function to Load Data ---
 async function loadAttendance() {
   if (!lectureNo) {
     document.querySelector("main").innerHTML = "<p>No lecture number provided.</p>";
     return;
   }
 
-  // 1. Get lecture details
-  const { data: lectures, error: lecErr } = await supabase
-    .from("lectures")
-    .select("*")
-    .eq("NO", lectureNo)
-    .single();
-  if (lecErr || !lectures) {
+  const { data: lecture, error: lecErr } = await supabase.from("lectures").select("*").eq("NO", lectureNo).single();
+  if (lecErr || !lecture) {
     document.querySelector("main").innerHTML = "<p>Lecture not found.</p>";
     return;
   }
 
-  const ids = lectures.IDS && lectures.IDS !== "EMPTY"
-    ? lectures.IDS.split(",").map(id => Number(id))
-    : [];
-
-  // 2. Get all students
-  const { data: students, error: stuErr } = await supabase
-    .from("students")
-    .select("id, name")
-    .order("name");
+  const presentIds = lecture.IDS && lecture.IDS !== "EMPTY" ? lecture.IDS.split(",").map(id => Number(id)) : [];
+  const { data: students, error: stuErr } = await supabase.from("students").select("id, name").order("name");
   if (stuErr) {
     console.error(stuErr);
     return;
   }
 
-  // 3. Render
-  document.getElementById("lecture-title").textContent = lectures.LECTURE;
-  document.getElementById("lecture-meta").textContent = `${lectures.DATE} | ${lectures.TIME}`;
-  
-  const listEl = document.getElementById("student-list");
-  listEl.innerHTML = "";
+  document.getElementById("lecture-title").textContent = lecture.LECTURE;
+  document.getElementById("lecture-meta").textContent = `${lecture.DATE} | ${lecture.TIME}`;
 
-  students.forEach(stu => {
+  // Combine data to create our state
+  allStudents = students.map(stu => ({
+    id: stu.id,
+    name: stu.name,
+    isPresent: presentIds.includes(stu.id)
+  }));
+
+  renderList();
+}
+
+// --- Function to Render the List ---
+function renderList() {
+  listEl.innerHTML = ""; // Clear current list
+  
+  const filteredStudents = allStudents.filter(stu => {
+    if (currentFilter === 'present') return stu.isPresent;
+    if (currentFilter === 'absent') return !stu.isPresent;
+    return true; // 'all'
+  });
+
+  if (filteredStudents.length === 0) {
+    listEl.innerHTML = `<div class="student-item"><p>No students match this filter.</p></div>`;
+    return;
+  }
+
+  filteredStudents.forEach(stu => {
     const item = document.createElement("div");
     item.className = "student-item";
-
-    const nameEl = document.createElement("span");
-    nameEl.className = "student-name";
-    nameEl.textContent = stu.name;
-
-    const badge = document.createElement("span");
-    if (ids.includes(stu.id)) {
-      badge.className = "badge badge-present";
-      badge.textContent = "Present";
-    } else {
-      badge.className = "badge badge-absent";
-      badge.textContent = "Absent";
-    }
-
-    item.appendChild(nameEl);
-    item.appendChild(badge);
+    item.innerHTML = `
+      <span class="student-name">${stu.name}</span>
+      <button 
+        class="status-toggle ${stu.isPresent ? 'present' : 'absent'}" 
+        data-id="${stu.id}"
+      >
+        ${stu.isPresent ? 'Present' : 'Absent'}
+      </button>
+    `;
     listEl.appendChild(item);
   });
 }
+
+// --- Function to Toggle Attendance Status ---
+async function toggleAttendance(studentId, button) {
+  button.disabled = true; // Disable button during update
+  button.textContent = 'Saving...';
+
+  const student = allStudents.find(s => s.id === studentId);
+  if (!student) return;
+
+  const newStatus = !student.isPresent;
+  const rpcName = newStatus ? 'mark_student_present' : 'mark_student_absent';
+  
+  const { error } = await supabase.rpc(rpcName, {
+    p_student_id: studentId,
+    p_lecture_no: lectureNo
+  });
+  
+  if (error) {
+    alert(`Error updating status: ${error.message}`);
+    // Revert button text on error
+    button.textContent = student.isPresent ? 'Present' : 'Absent'; 
+  } else {
+    // Update state on success
+    student.isPresent = newStatus;
+  }
+  
+  button.disabled = false;
+  renderList(); // Re-render the list to reflect changes
+}
+
+// --- Event Listeners ---
+filterControls.addEventListener('click', (e) => {
+  if (e.target.tagName === 'BUTTON') {
+    document.querySelector('.filter-btn.active').classList.remove('active');
+    e.target.classList.add('active');
+    currentFilter = e.target.dataset.filter;
+    renderList();
+  }
+});
+
+listEl.addEventListener('click', (e) => {
+  if (e.target.classList.contains('status-toggle')) {
+    const studentId = parseInt(e.target.dataset.id, 10);
+    toggleAttendance(studentId, e.target);
+  }
+});
 
 window.addEventListener("DOMContentLoaded", loadAttendance);
 </script>
@@ -129,7 +228,16 @@ window.addEventListener("DOMContentLoaded", loadAttendance);
     <h2 id="lecture-title">Loading...</h2>
     <p id="lecture-meta"></p>
   </div>
-  <div id="student-list" class="student-list"></div>
+
+  <div class="filter-controls">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="present">Present</button>
+    <button class="filter-btn" data-filter="absent">Absent</button>
+  </div>
+
+  <div id="student-list" class="student-list">
+    </div>
+
   <a href="Home.html" class="back-btn">← Back</a>
 </main>
 
