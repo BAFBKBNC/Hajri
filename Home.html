@@ -5,160 +5,292 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClassCount</title>
 <style>
-    body {
-        font-family: 'Segoe UI', sans-serif;
+    :root {
+        --primary-color: #243b8f;
+        --primary-dark: #1b2e6d;
+        --light-gray: #f4f6fa;
+        --text-color: #333;
+        --text-light: #666;
+        --white-color: #ffffff;
+        --green-accent: #28a745;
+        --border-radius: 12px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --fab-size: 56px;
+    }
+
+    * {
         margin: 0;
-        background-color: #f4f6fa;
-        color: #333;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        font-size: 16px;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--light-gray);
+        color: var(--text-color);
+    }
+
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
     }
 
     header {
-        background-color: #243b8f;
-        color: white;
-        padding: 1rem 2rem;
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        padding: 1rem 1.5rem;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     header h1 {
         margin: 0;
-        font-size: 1.6rem;
+        font-size: 1.5rem;
+        font-weight: 600;
     }
 
     main {
-        padding: 1rem;
-        max-width: 1100px;
-        margin: auto;
+        flex-grow: 1;
+        padding: 1.5rem;
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
     }
 
-    /* Tab Buttons */
     .tab-buttons {
         display: flex;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-        gap: 1rem;
-        flex-wrap: wrap;
+        background-color: var(--white-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
     }
 
     .tab-btn {
         flex: 1;
-        padding: 0.8rem;
-        background-color: #e4e7f1;
+        padding: 1rem 0.5rem;
+        background-color: transparent;
         border: none;
-        border-radius: 6px;
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
+        color: var(--text-light);
+        border-bottom: 3px solid transparent;
     }
 
     .tab-btn.active {
-        background-color: #243b8f;
-        color: white;
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--primary-color);
     }
 
-    /* Cards Grid */
     .card-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
     }
 
     .card {
-        background: white;
-        padding: 1.2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        background: var(--white-color);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
     }
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     }
 
     .title {
-        font-size: 1.1rem;
+        font-size: 1.25rem;
         font-weight: 600;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-dark);
     }
 
-    .date {
+    .details {
         font-size: 0.9rem;
-        color: #666;
-        margin-bottom: 0.3rem;
-    }
-
-    .time {
-        font-size: 0.9rem;
-        color: #888;
+        color: var(--text-light);
         margin-bottom: 1rem;
+    }
+    .details span {
+        margin-right: 1rem;
     }
 
     .stats {
-        font-size: 0.95rem;
-        font-weight: bold;
-        color: #2a7a1f;
-        margin-bottom: 1rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--green-accent);
+        margin-bottom: 1.5rem;
     }
 
     .view-btn {
+        margin-top: auto; /* Pushes button to the bottom */
         display: inline-block;
-        padding: 0.5rem 1rem;
-        background-color: #243b8f;
-        color: white;
-        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        border-radius: 8px;
         text-decoration: none;
-        font-weight: 500;
+        text-align: center;
+        font-weight: 600;
         transition: background-color 0.3s ease;
     }
 
     .view-btn:hover {
-        background-color: #1b2e6d;
+        background-color: var(--primary-dark);
     }
 
     footer {
         text-align: center;
-        padding: 1rem;
-        font-size: 0.85rem;
-        color: #777;
-        margin-top: 2rem;
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        color: #999;
     }
 
-    /* Hide inactive tab */
-    .tab-content {
-        display: none;
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* FAB and Overlay Styles */
+    .fab-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0s 0.3s;
     }
-    .tab-content.active {
-        display: block;
+    
+    .fab-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s ease;
+    }
+
+    .fab-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .fab {
+        width: var(--fab-size);
+        height: var(--fab-size);
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        font-size: 28px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        order: 2; /* Ensures FAB is on the right */
+    }
+
+    .fab:hover {
+        background-color: var(--primary-dark);
+    }
+    
+    .fab-options {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        gap: 1.5rem;
+        order: 1; /* Ensures options are on the left */
+        /* Hide options by default */
+        visibility: hidden;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s ease;
+    }
+
+    .fab-option {
+        text-decoration: none;
+    }
+
+    .fab-option-label {
+        background: var(--white-color);
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary-dark);
+        white-space: nowrap;
+    }
+
+    /* Active FAB State */
+    .fab-container.active .fab {
+        transform: rotate(135deg);
+    }
+
+    .fab-container.active .fab-options {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(0);
     }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<header>
-    <h1>ClassCount</h1>
-</header>
+<div class="app-container">
+    <header>
+        <h1>ClassCount</h1>
+    </header>
 
-<main>
-    <div class="tab-buttons">
-        <button class="tab-btn active" onclick="switchTab('lectures')">Lectures</button>
-        <button class="tab-btn" onclick="switchTab('events')">Events</button>
+    <main>
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('lectures', event)">Lectures</button>
+            <button class="tab-btn" onclick="switchTab('events', event)">Events</button>
+        </div>
+
+        <div id="lectures" class="tab-content active">
+            <div class="card-container" id="lectures-container"></div>
+        </div>
+
+        <div id="events" class="tab-content">
+            <div class="card-container" id="events-container"></div>
+        </div>
+    </main>
+
+    <footer>
+        Made by Developers of BAFs App.
+    </footer>
+</div>
+
+<div class="fab-overlay" id="fab-overlay"></div>
+<div class="fab-container" id="fab-container">
+    <div class="fab-options">
+        <a href="add.html" class="fab-option">
+            <span class="fab-option-label">Add Lecture</span>
+        </a>
+        <a href="addEvent.html" class="fab-option">
+            <span class="fab-option-label">Add Event</span>
+        </a>
     </div>
-
-    <div id="lectures" class="tab-content active">
-        <div class="card-container" id="lectures-container"></div>
-    </div>
-
-    <div id="events" class="tab-content">
-        <div class="card-container" id="events-container"></div>
-    </div>
-</main>
-
-<footer>
-    Made by Developers of BAFs App.
-</footer>
+    <button class="fab" id="fab">&plus;</button>
+</div>
 
 <script>
     // Initialize Supabase
@@ -167,77 +299,80 @@
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Switch tabs
-    function switchTab(tabName) {
+    function switchTab(tabName, event) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabName).classList.add('active');
-        event.target.classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
     // Load Lectures
     async function loadLectures() {
-        const { data, error } = await supabase
-            .from("lectures")
-            .select("*")
-            .order("NO", { ascending: false });
-
+        const { data, error } = await supabase.from("lectures").select("*").order("NO", { ascending: false });
         if (error) {
             console.error("Error fetching lectures:", error);
             return;
         }
-
         const container = document.getElementById("lectures-container");
         container.innerHTML = "";
-
         data.forEach(lecture => {
             const presentCount = lecture.IDS ? lecture.IDS.split(",").filter(id => id.trim() !== "").length : 0;
             const card = document.createElement("div");
-            card.classList.add("card");
-
+            card.className = "card";
             card.innerHTML = `
                 <div class="title">${lecture.LECTURE}</div>
-                <div class="date">Date: ${lecture.DATE}</div>
-                <div class="time">Time: ${lecture.TIME}</div>
+                <div class="details">
+                    <span>${lecture.DATE}</span>
+                    <span>${lecture.TIME}</span>
+                </div>
                 <div class="stats">Present: ${presentCount}</div>
                 <a href="view.html?no=${lecture.NO}" class="view-btn">View Attendance</a>
             `;
-
             container.appendChild(card);
         });
     }
 
     // Load Events
     async function loadEvents() {
-        const { data, error } = await supabase
-            .from("events")
-            .select("*")
-            .order("NO", { ascending: false });
-
+        const { data, error } = await supabase.from("events").select("*").order("NO", { ascending: false });
         if (error) {
             console.error("Error fetching events:", error);
             return;
         }
-
         const container = document.getElementById("events-container");
         container.innerHTML = "";
-
         data.forEach(event => {
             const participantCount = event.IDS ? event.IDS.split(",").filter(id => id.trim() !== "").length : 0;
             const card = document.createElement("div");
-            card.classList.add("card");
-
+            card.className = "card";
             card.innerHTML = `
                 <div class="title">${event.EVENTS}</div>
-                <div class="date">Date: ${event.DATE}</div>
-                <div class="time">Time: ${event.TIME}</div>
+                <div class="details">
+                    <span>${event.DATE}</span>
+                    <span>${event.TIME}</span>
+                </div>
                 <div class="stats">Participants: ${participantCount}</div>
-                <a href="viewEvent.html?no=${event.NO}" class="view-btn">View Event</a>
+                <a href="viewEvent.html?no=${event.NO}" class="view-btn">View Participants</a>
             `;
-
             container.appendChild(card);
         });
     }
+    
+    // FAB Logic
+    const fabContainer = document.getElementById('fab-container');
+    const fabButton = document.getElementById('fab');
+    const fabOverlay = document.getElementById('fab-overlay');
 
+    function toggleFabMenu() {
+        fabContainer.classList.toggle('active');
+        fabOverlay.classList.toggle('active');
+    }
+
+    fabButton.addEventListener('click', toggleFabMenu);
+    fabOverlay.addEventListener('click', toggleFabMenu);
+
+
+    // Initial Load
     loadLectures();
     loadEvents();
 </script>
