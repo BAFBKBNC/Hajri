@@ -27,7 +27,7 @@
   .lecture-info h2 { margin: 0; font-size: 1.2rem; color: #243b8f; }
   .lecture-info p { margin: 0.2rem 0 0; font-size: 0.95rem; color: #555; }
   
-  /* NEW: Filter controls */
+  /* Filter controls */
   .filter-controls {
     display: flex;
     gap: 0.5rem;
@@ -62,7 +62,7 @@
   .student-item:last-child { border-bottom:none; }
   .student-name { font-weight:500; color:#333; }
 
-  /* MODIFIED: Status toggle button */
+  /* Status toggle button */
   .status-toggle {
     font-size:0.8rem;
     padding:0.4rem 0.8rem;
@@ -151,7 +151,7 @@ function renderList() {
   });
 
   if (filteredStudents.length === 0) {
-    listEl.innerHTML = `<div class="student-item"><p>No students match this filter.</p></div>`;
+    listEl.innerHTML = `<div class="student-item" style="justify-content:center;"><p>No students match this filter.</p></div>`;
     return;
   }
 
