@@ -50,10 +50,7 @@
   .row.row-2 { flex-direction: column; }
   .row.row-2 > * { flex: unset; }
   #qr-reader { margin-top:10px; border:1px solid #ccc; border-radius:8px; }
-  /* New professional scanner button */
-  #start-qr-btn {
-    background:#4CAF50;
-    color:white;
+  .qr-buttons button {
     font-weight:600;
     padding:0.8rem 1.5rem;
     border:none;
@@ -61,15 +58,20 @@
     cursor:pointer;
     font-size:1rem;
     transition: background 0.2s ease;
-    display:block;
-    margin: 0 auto; /* center align */
   }
-  #start-qr-btn:hover {
-    background:#3e8e41;
+  #start-qr-btn {
+    background:#4CAF50;
+    color:white;
   }
+  #start-qr-btn:hover { background:#3e8e41; }
+  /* NEW: Style for the close button */
+  #close-qr-btn {
+    background:#f44336; /* Red color */
+    color:white;
+  }
+  #close-qr-btn:hover { background:#d32f2f; }
 </style>
 
-<!-- QR Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <script type="module">
@@ -82,10 +84,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 /* DOM Refs */
 const listEl = document.getElementById("student-list");
 const searchEl = document.getElementById("student-search");
+// NEW: Refs for QR buttons
+const startQrBtn = document.getElementById("start-qr-btn");
+const closeQrBtn = document.getElementById("close-qr-btn");
+const qrReaderEl = document.getElementById("qr-reader");
 
 /* State */
 let students = [];
 const selectedIds = new Set();
+let html5QrCode; // NEW: Declare QR code instance in a wider scope
 
 /* Deep beep sound */
 const beepSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
@@ -145,30 +152,26 @@ searchEl.addEventListener("input", () => {
   render(students.filter(s => s.name.toLowerCase().includes(q)));
 });
 
-/* QR Scanner */
-document.getElementById("start-qr-btn").addEventListener("click", () => {
-  const qrReader = document.getElementById("qr-reader");
-  qrReader.style.display = "block";
+/* QR Scanner Logic */
+startQrBtn.addEventListener("click", () => {
+  qrReaderEl.style.display = "block";
+  startQrBtn.style.display = "none";
+  closeQrBtn.style.display = "inline-block";
 
-  const beepSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg"); // ✅ Google beep
-
-  const html5QrCode = new Html5Qrcode("qr-reader");
+  html5QrCode = new Html5Qrcode("qr-reader");
   html5QrCode.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
     qrCodeMessage => {
       const scannedId = parseInt(qrCodeMessage, 10);
-
-      // ✅ Only allow IDs that exist in student list
       const validStudent = students.find(s => s.id === scannedId);
 
       if (validStudent) {
         if (!selectedIds.has(scannedId)) {
           selectedIds.add(scannedId);
           render(students);
-          beepSound.play(); // ✅ Beep only on first valid scan
+          beepSound.play();
         }
-        // Duplicate scan → ignored silently
       } else {
         alert("Scanned ID not found in student list!");
       }
@@ -176,6 +179,24 @@ document.getElementById("start-qr-btn").addEventListener("click", () => {
     () => {}
   ).catch(err => console.error("QR start failed", err));
 });
+
+// NEW: Event listener to close the scanner
+closeQrBtn.addEventListener("click", () => {
+  if (html5QrCode && html5QrCode.isScanning) {
+    html5QrCode.stop().then(() => {
+      qrReaderEl.style.display = "none";
+      startQrBtn.style.display = "inline-block";
+      closeQrBtn.style.display = "none";
+    }).catch(err => {
+      console.error("Failed to stop QR scanner.", err);
+      // Even if it fails, reset the UI
+      qrReaderEl.style.display = "none";
+      startQrBtn.style.display = "inline-block";
+      closeQrBtn.style.display = "none";
+    });
+  }
+});
+
 
 /* Form submit */
 document.getElementById("lecture-form").addEventListener("submit", async (e) => {
@@ -193,28 +214,45 @@ document.getElementById("lecture-form").addEventListener("submit", async (e) => 
   const idsArr = Array.from(selectedIds).map(Number);
   const DATE = toDDMMYYYY(dateISO);
 
-  const { error: insertErr } = await supabase.from("lectures").insert([{
-    DATE,
-    TIME: period,
-    LECTURE: lectureName,
-    IDS: idsArr.length ? idsArr.join(",") : "EMPTY"
-  }]);
+  // MODIFIED: Use .select('NO').single() to get the new lecture's ID
+  const { data: newLecture, error: insertErr } = await supabase
+    .from("lectures")
+    .insert([{
+      DATE,
+      TIME: period,
+      LECTURE: lectureName,
+      IDS: idsArr.length ? idsArr.join(",") : "EMPTY"
+    }])
+    .select('NO') // <-- Gets the NO column
+    .single();   // <-- Ensures you get a single object back
 
   if (insertErr) {
     alert("Error adding lecture: " + insertErr.message);
     return;
   }
-
+  
+  // This block runs only if there are selected students
   if (idsArr.length) {
+    // 1. Increment the 'attended' count (your existing code)
     const { error: rpcErr } = await supabase.rpc("increment_attended_bulk", { ids: idsArr });
     if (rpcErr) {
-      console.error("Attendance RPC error:", rpcErr);
-      alert("Lecture saved, but attendance update failed: " + rpcErr.message);
+      alert("Lecture saved, but attendance count update failed: " + rpcErr.message);
+      return;
+    }
+
+    // 2. NEW: Call the function to append the lecture ID to each student's record
+    const { error: appendErr } = await supabase.rpc("append_lecture_id_bulk", {
+      lecture_id: newLecture.NO,
+      student_ids: idsArr
+    });
+
+    if (appendErr) {
+      alert("Attendance count updated, but failed to link lecture to students: " + appendErr.message);
       return;
     }
   }
 
-  alert("Lecture saved and attendance updated!");
+  alert("Lecture saved and all student records updated successfully! 👍");
   selectedIds.clear();
   document.getElementById("lecture-form").reset();
   render(students);
@@ -260,9 +298,9 @@ window.addEventListener("DOMContentLoaded", loadStudents);
     <label for="student-search">Search Students</label>
     <input type="text" id="student-search" placeholder="Search by name" />
 
-    <!-- QR Scanner -->
-    <div style="margin-bottom:1rem; text-align:center;">
+    <div style="margin-bottom:1rem; text-align:center;" class="qr-buttons">
       <button type="button" id="start-qr-btn">Start QR Scanner</button>
+      <button type="button" id="close-qr-btn" style="display:none;">Close Scanner</button>
       <div id="qr-reader" style="width:100%; max-width:400px; display:none; margin:auto;"></div>
     </div>
 
