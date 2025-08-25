@@ -8,8 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
-
+    
     <style>
         /* Custom styles to use the Inter font */
         body {
@@ -80,6 +79,8 @@
             
         </main>
     </div>
+
+    <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
 
     <script type="module">
         // Import Supabase client
@@ -343,7 +344,8 @@
         // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
             loadDashboard();
-            lucide.createIcons(); // This line draws the icons
+            // This call will now succeed because the lucide script above has already run
+            lucide.createIcons();
             
             document.getElementById('logoutButton').addEventListener('click', (e) => {
                 e.preventDefault(); // Prevent the link from navigating
