@@ -19,7 +19,7 @@
   select, input[type="date"], input[type="text"] {
     width:100%; padding:.65rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; margin-bottom:1rem;
   }
-  .student-list { max-height:50vh; overflow-y:auto; border:1px solid #ccc; border-radius:8px; background:#fff; }
+  .student-list { max-height:50vh; overflow-y:auto; border:1px solid #ccc; border-radius:8px; background:#fff; margin-bottom:20px; }
   .student-item {
     display:flex; align-items:center; gap:12px;
     padding:.7rem .9rem; border-bottom:1px solid #f0f0f0; cursor:pointer;
@@ -28,47 +28,21 @@
   .student-item:last-child { border-bottom:none; }
   .student-item:hover { background:#f9f9ff; }
   .student-item.selected { background:#e6f3ff; }
-  .student-name {
-    flex:1 1 auto;
-    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
-    font-size:1rem; font-weight:500; color:#333;
-  }
-  .student-badge {
-    flex:0 0 auto; font-size:.8rem; padding:.15rem .5rem; border-radius:999px; border:1px solid #d0d7ff;
-    background:#eef2ff; color:#243b8f;
-  }
-  .submit-btn {
-    width:100%; background:#243b8f; color:#fff; padding:.9rem 1.2rem; border:none; border-radius:8px; font-weight:700; cursor:pointer;
-  }
+  .student-name { flex:1 1 auto; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1rem; font-weight:500; color:#333; }
+  .student-badge { flex:0 0 auto; font-size:.8rem; padding:.15rem .5rem; border-radius:999px; border:1px solid #d0d7ff; background:#eef2ff; color:#243b8f; }
+  .submit-btn { width:100%; background:#243b8f; color:#fff; padding:.9rem 1.2rem; border:none; border-radius:8px; font-weight:700; cursor:pointer; }
   .submit-btn:hover { background:#1b2e6d; }
   .row { display:flex; gap:10px; }
   @media (min-width: 640px) { .row-2 > * { flex:1; } }
-  .lecture-title { font-size: 1rem; font-weight: bold; }
-  .lecture-time { font-size: 0.9rem; color: #666; margin-top: 2px; }
-  .student-list { margin-bottom: 20px; }
-  .save-btn { display: block; width: 100%; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
   .row.row-2 { flex-direction: column; }
   .row.row-2 > * { flex: unset; }
   #qr-reader { margin-top:10px; border:1px solid #ccc; border-radius:8px; }
   .qr-buttons button {
-    font-weight:600;
-    padding:0.8rem 1.5rem;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:1rem;
-    transition: background 0.2s ease;
+    font-weight:600; padding:0.8rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-size:1rem; transition: background 0.2s ease;
   }
-  #start-qr-btn {
-    background:#4CAF50;
-    color:white;
-  }
+  #start-qr-btn { background:#4CAF50; color:white; }
   #start-qr-btn:hover { background:#3e8e41; }
-  /* NEW: Style for the close button */
-  #close-qr-btn {
-    background:#f44336; /* Red color */
-    color:white;
-  }
+  #close-qr-btn { background:#f44336; color:white; }
   #close-qr-btn:hover { background:#d32f2f; }
 </style>
 
@@ -81,10 +55,22 @@ const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* Helpers */
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+function getCourse() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return (urlParams.get("course") || getCookie("course") || "sybaf").toLowerCase();
+}
+const course = getCourse();
+
 /* DOM Refs */
 const listEl = document.getElementById("student-list");
 const searchEl = document.getElementById("student-search");
-// NEW: Refs for QR buttons
 const startQrBtn = document.getElementById("start-qr-btn");
 const closeQrBtn = document.getElementById("close-qr-btn");
 const qrReaderEl = document.getElementById("qr-reader");
@@ -92,9 +78,7 @@ const qrReaderEl = document.getElementById("qr-reader");
 /* State */
 let students = [];
 const selectedIds = new Set();
-let html5QrCode; // NEW: Declare QR code instance in a wider scope
-
-/* Deep beep sound */
+let html5QrCode;
 const beepSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 const toDDMMYYYY = (yyyy_mm_dd) => {
@@ -126,19 +110,14 @@ function render(list) {
 }
 
 function toggleSelect(id) {
-  if (selectedIds.has(id)) {
-    selectedIds.delete(id);
-  } else {
-    selectedIds.add(id);
-  }
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
   render(students);
 }
 
 async function loadStudents() {
-  const { data, error } = await supabase
-    .from("students")
-    .select("id, name, attended")
-    .order("name");
+  const tableName = `${course}_students`;
+  const { data, error } = await supabase.from(tableName).select("id, name, attended").order("name");
   if (error) {
     console.error("Error fetching students:", error);
     return;
@@ -166,21 +145,16 @@ startQrBtn.addEventListener("click", () => {
       const scannedId = parseInt(qrCodeMessage, 10);
       const validStudent = students.find(s => s.id === scannedId);
 
-      if (validStudent) {
-        if (!selectedIds.has(scannedId)) {
-          selectedIds.add(scannedId);
-          render(students);
-          beepSound.play();
-        }
-      } else {
-        alert("Scanned ID not found in student list!");
+      if (validStudent && !selectedIds.has(scannedId)) {
+        selectedIds.add(scannedId);
+        render(students);
+        beepSound.play();
       }
     },
     () => {}
   ).catch(err => console.error("QR start failed", err));
 });
 
-// NEW: Event listener to close the scanner
 closeQrBtn.addEventListener("click", () => {
   if (html5QrCode && html5QrCode.isScanning) {
     html5QrCode.stop().then(() => {
@@ -189,14 +163,12 @@ closeQrBtn.addEventListener("click", () => {
       closeQrBtn.style.display = "none";
     }).catch(err => {
       console.error("Failed to stop QR scanner.", err);
-      // Even if it fails, reset the UI
       qrReaderEl.style.display = "none";
       startQrBtn.style.display = "inline-block";
       closeQrBtn.style.display = "none";
     });
   }
 });
-
 
 /* Form submit */
 document.getElementById("lecture-form").addEventListener("submit", async (e) => {
@@ -214,38 +186,34 @@ document.getElementById("lecture-form").addEventListener("submit", async (e) => 
   const idsArr = Array.from(selectedIds).map(Number);
   const DATE = toDDMMYYYY(dateISO);
 
-  // MODIFIED: Use .select('NO').single() to get the new lecture's ID
+  const lecturesTable = `${course}_lectures`;
   const { data: newLecture, error: insertErr } = await supabase
-    .from("lectures")
+    .from(lecturesTable)
     .insert([{
       DATE,
       TIME: period,
       LECTURE: lectureName,
       IDS: idsArr.length ? idsArr.join(",") : "EMPTY"
     }])
-    .select('NO') // <-- Gets the NO column
-    .single();   // <-- Ensures you get a single object back
+    .select('NO')
+    .single();
 
   if (insertErr) {
     alert("Error adding lecture: " + insertErr.message);
     return;
   }
-  
-  // This block runs only if there are selected students
+
   if (idsArr.length) {
-    // 1. Increment the 'attended' count (your existing code)
     const { error: rpcErr } = await supabase.rpc("increment_attended_bulk", { ids: idsArr });
     if (rpcErr) {
       alert("Lecture saved, but attendance count update failed: " + rpcErr.message);
       return;
     }
 
-    // 2. NEW: Call the function to append the lecture ID to each student's record
     const { error: appendErr } = await supabase.rpc("append_lecture_id_bulk", {
       lecture_id: newLecture.NO,
       student_ids: idsArr
     });
-
     if (appendErr) {
       alert("Attendance count updated, but failed to link lecture to students: " + appendErr.message);
       return;
