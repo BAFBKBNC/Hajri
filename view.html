@@ -98,7 +98,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const params = new URLSearchParams(window.location.search);
 const lectureNo = parseInt(params.get("no"), 10);
-// --- MODIFIED: Get course from URL ---
 const course = params.get("course"); 
 
 // --- State Management ---
@@ -111,13 +110,11 @@ const filterControls = document.querySelector(".filter-controls");
 
 // --- Main Function to Load Data ---
 async function loadAttendance() {
-  // --- MODIFIED: Check for both lectureNo and course ---
   if (!lectureNo || !course) {
     document.querySelector("main").innerHTML = "<p>Course or lecture number not provided in URL.</p>";
     return;
   }
 
-  // --- MODIFIED: Use course to define table name ---
   const lecturesTable = `${course}_lectures`;
   const studentsTable = `${course}_students`;
 
@@ -190,7 +187,12 @@ async function toggleAttendance(studentId, button) {
 
   const newStatus = !student.isPresent;
   
-  // --- MODIFIED: Use course to define RPC name ---
+  // This part determines which backend function to call.
+  // The backend function itself handles ALL database updates.
+  // This includes:
+  // 1. Updating the lecture's 'IDS' column.
+  // 2. Updating the student's 'attended' count (+1 or -1).
+  // 3. Updating the student's 'present' status ('YES' or 'NO').
   const rpcName = newStatus 
     ? `${course}_mark_student_present` 
     : `${course}_mark_student_absent`;
@@ -205,7 +207,7 @@ async function toggleAttendance(studentId, button) {
     // Revert button text on error
     button.textContent = student.isPresent ? 'Present' : 'Absent'; 
   } else {
-    // Update state on success
+    // Update local state on success
     student.isPresent = newStatus;
   }
   
