@@ -28,28 +28,23 @@
 
 <body class="antialiased text-gray-800">
 
-    <div class="min-h-screen max-w-lg mx-auto bg-white shadow-lg">
+    <div class="min-h-screen max-w-lg mx-auto bg-white shadow-lg relative">
 
-        <!-- HEADER -->
+        <a href="QR.html" aria-label="View QR Code" class="absolute top-4 right-4 md:right-6 z-20">
+            <div class="p-2 bg-indigo-600 rounded-full shadow-md">
+                <i data-lucide="qr-code" class="w-6 h-6 stroke-white"></i>
+            </div>
+        </a>
+
         <header class="bg-indigo-600 text-white p-4 flex justify-between items-center rounded-b-2xl sticky top-0 z-10 shadow-md">
             <div>
                 <p class="text-sm opacity-80">Welcome back,</p>
                 <h1 id="studentName" class="text-2xl font-bold">Loading...</h1>
             </div>
-            <div class="flex items-center space-x-4">
-                <a href="QR.html" aria-label="View QR Code">
-                    <i data-lucide="qr-code" class="w-6 h-6 stroke-white"></i>
-                </a>
-                <a href="#" id="logoutButton" aria-label="Logout">
-                    <i data-lucide="log-out" class="w-6 h-6 stroke-white"></i>
-                </a>
-            </div>
         </header>
 
-        <!-- MAIN -->
         <main class="p-4 md:p-6 space-y-8">
 
-            <!-- Attendance Section -->
             <section class="bg-gray-50 p-6 rounded-2xl shadow-sm border border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-700 mb-4">Overall Attendance</h2>
                 <div class="flex items-center justify-center space-x-6">
@@ -70,7 +65,6 @@
                 </div>
             </section>
 
-            <!-- Recently Attended -->
             <section>
                 <h2 class="text-lg font-semibold text-gray-700 mb-4">Recently Attended</h2>
                 <div id="lecturesList" class="space-y-3">
@@ -78,7 +72,6 @@
                 </div>
             </section>
 
-            <!-- Subject Breakdown -->
             <section>
                 <h2 class="text-lg font-semibold text-gray-700 mb-4">Subject Breakdown</h2>
                 <div id="subject-list" class="grid grid-cols-1 gap-3">
@@ -86,12 +79,19 @@
                 </div>
             </section>
         </main>
+
+        <div class="p-4 md:p-6 pb-8 flex justify-center">
+            <button id="logoutButton" class="w-full max-w-xs bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg transition-colors duration-200">
+                <div class="flex items-center justify-center space-x-2">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span>Log Out</span>
+                </div>
+            </button>
+        </div>
     </div>
 
-    <!-- Load Lucide first -->
     <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
 
-    <!-- Your main script -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -326,4 +326,5 @@
         });
     </script>
 </body>
+
 </html>
