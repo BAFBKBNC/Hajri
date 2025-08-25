@@ -32,13 +32,13 @@
                 <p class="text-sm opacity-80">Welcome back,</p>
                 <h1 id="studentName" class="text-2xl font-bold">Loading...</h1>
             </div>
-             <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4">
                 <a href="QR.html" aria-label="View QR Code">
-                    <i data-lucide="qr-code" class="cursor-pointer hover:opacity-80 transition-opacity"></i>
+                    <i data-lucide="qr-code"></i>
                 </a>
-                <button id="logoutButton" aria-label="Logout" class="bg-transparent border-none text-white">
-                    <i data-lucide="log-out" class="cursor-pointer hover:opacity-80 transition-opacity"></i>
-                </button>
+                <a href="#" id="logoutButton" aria-label="Logout">
+                    <i data-lucide="log-out"></i>
+                </a>
             </div>
         </header>
 
@@ -90,40 +90,9 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg';
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- Data Mappings ---
-        const professorMap = {
-            "Financial Accounting – III": "Prof. Vaibhav Narule",
-            "Cost Accounting – I": "Prof. Kirshna Velar",
-            "Basics of Service Sector": "Prof. Jatin Chouhan",
-            "Mutual Fund Distributor – I": "Prof. Narayan Lad",
-            "Big Data Analysis": "Dr. Rupesh Patil",
-            "Field Project": "Prof. Narayan Lad",
-            "Marathi": "Prof. Narayan Lad",
-            "Sports": "Prof. Narayan Lad"
-        };
+        // --- Data Mappings (REMOVED HARDCODED MAP) ---
         
         // --- Helper Functions ---
-
-        /**
-         * Clears all cookies for the current domain.
-         */
-        function clearAllCookies() {
-            const cookies = document.cookie.split(";");
-            for (const cookie of cookies) {
-                const eqPos = cookie.indexOf("=");
-                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-                // Set the cookie's expiration to a past date
-                document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-            }
-        }
-
-        /**
-         * Handles the logout process by clearing cookies and redirecting.
-         */
-        function handleLogout() {
-            clearAllCookies();
-            window.location.replace('login.html'); // Use replace to prevent going back
-        }
 
         /**
          * Gets a cookie value by its name.
@@ -134,6 +103,39 @@
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+        
+        // NEW: Logout function to clear all cookies and redirect
+        function logout() {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i];
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                // Set expiry to a past date to delete the cookie
+                document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            }
+            window.location.replace('login.html');
+        }
+
+        // NEW: Fetches the professor-subject mapping from the database
+        async function fetchProfessorMap(course) {
+            const { data, error } = await supabase
+                .from(`${course}_prof`) // e.g., 'sybaf_prof'
+                .select('subject, name');
+
+            if (error) {
+                console.error("Error fetching professor map:", error);
+                return {}; // Return an empty map on failure
+            }
+
+            // Convert the array of objects into a { subject: name } map
+            const professorMap = data.reduce((map, item) => {
+                map[item.subject] = item.name;
+                return map;
+            }, {});
+
+            return professorMap;
         }
 
         /**
@@ -155,8 +157,9 @@
          * Fetches all lecture data, calculates subject-wise attendance, and renders it.
          * @param {Set<string>} attendedLectureIds - A Set containing the IDs of lectures the student attended.
          * @param {string} course - The course name (e.g., 'sybaf') to use as a table prefix.
+         * @param {object} professorMap - The dynamically fetched professor map.
          */
-        async function displayDynamicSubjectBreakdown(attendedLectureIds, course) {
+        async function displayDynamicSubjectBreakdown(attendedLectureIds, course, professorMap) {
             const container = document.getElementById('subject-list');
             if (!container) return;
             container.innerHTML = `<div class="text-center text-gray-500 p-4">Calculating...</div>`;
@@ -202,6 +205,7 @@
                 if (percentage < 75) textColor = 'text-red-500';
                 else if (percentage < 80) textColor = 'text-orange-500';
 
+                // NEW: Use the dynamic professorMap
                 const professor = professorMap[subjectName] || 'N/A';
 
                 const subjectCard = `
@@ -224,8 +228,9 @@
          * Fetches and displays the 5 most recently attended lectures.
          * @param {string} lectureIdsString - A comma-separated string of lecture IDs.
          * @param {string} course - The course name (e.g., 'sybaf') to use as a table prefix.
+         * @param {object} professorMap - The dynamically fetched professor map.
          */
-        async function loadAttendedLectures(lectureIdsString, course) {
+        async function loadAttendedLectures(lectureIdsString, course, professorMap) {
             const list = document.getElementById("lecturesList");
             if (!lectureIdsString) {
                 list.innerHTML = `<div class="text-center text-gray-500 p-4">No lecture attendance records found.</div>`;
@@ -253,6 +258,7 @@
 
             list.innerHTML = ""; // Clear loading message
             lectures.forEach(lec => {
+                // NEW: Use the dynamic professorMap
                 const professor = professorMap[lec.LECTURE] || 'N/A';
                 
                 // Reformat date
@@ -294,6 +300,9 @@
                 }, 1500);
                 return;
             }
+            
+            // NEW: Fetch the professor map dynamically first
+            const professorMap = await fetchProfessorMap(course);
             
             // ✅ FETCH STUDENT DATA FROM DYNAMIC TABLE
             const { data: student, error: studentError } = await supabase
@@ -352,21 +361,21 @@
             // Create a Set of attended lecture IDs for efficient lookup
             const attendedLectureIds = new Set(student.lectures ? student.lectures.split(',').map(id => id.trim()) : []);
 
-            // ✅ Load dynamic sections, passing the course name
-            loadAttendedLectures(student.lectures, course);
-            displayDynamicSubjectBreakdown(attendedLectureIds, course);
+            // ✅ Load dynamic sections, passing the course name and the professor map
+            loadAttendedLectures(student.lectures, course, professorMap);
+            displayDynamicSubjectBreakdown(attendedLectureIds, course, professorMap);
         }
 
         // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
             loadDashboard();
             lucide.createIcons(); // Initialize icons
-
-            // NEW: Attach logout event listener
-            const logoutBtn = document.getElementById('logoutButton');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
-            }
+            
+            // NEW: Add event listener for the logout button
+            document.getElementById('logoutButton').addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent the link from navigating
+                logout();
+            });
         });
 
     </script>
