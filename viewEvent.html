@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>View Event Participants - ClassCount</title>
+<title>View Event Participants - ClassCount Pro</title>
 <style>
   :root {
     --primary-color: #4f46e5;
@@ -211,8 +211,8 @@
       return;
     }
 
-    // Use the 'participants' array column
-    const presentIds = new Set(event.participants || []);
+    // UPDATED: Read from the 'attendees' array column
+    const presentIds = new Set(event.attendees || []);
     
     const { data: students, error: stuErr } = await supabase.from(studentsTable).select("id, name").order("name");
     if (stuErr) {
@@ -281,7 +281,8 @@
     
     const { data: event, error: fetchError } = await supabase
         .from(eventsTable)
-        .select('participants')
+        // UPDATED: Select the 'attendees' column
+        .select('attendees')
         .eq('NO', eventNo)
         .single();
 
@@ -292,17 +293,18 @@
         return;
     }
 
-    const participantsSet = new Set((event.participants || []).map(String));
+    const attendeesSet = new Set((event.attendees || []).map(String));
     if (newStatus === true) {
-        participantsSet.add(studentId.toString());
+        attendeesSet.add(studentId.toString());
     } else {
-        participantsSet.delete(studentId.toString());
+        attendeesSet.delete(studentId.toString());
     }
-    const newParticipantsArray = Array.from(participantsSet);
+    const newAttendeesArray = Array.from(attendeesSet);
 
     const { error: updateError } = await supabase
       .from(eventsTable)
-      .update({ participants: newParticipantsArray })
+      // UPDATED: Update the 'attendees' column
+      .update({ attendees: newAttendeesArray })
       .eq('NO', eventNo);
     
     if (updateError) {
@@ -339,7 +341,7 @@
 </script>
 </head>
 <body>
-<header><h1>ClassCount</h1></header>
+<header><h1>ClassCount Pro</h1></header>
 
 <main>
   <div class="container">
