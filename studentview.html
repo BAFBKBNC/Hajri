@@ -253,7 +253,7 @@
       const { data: attendedLectures, error: attendedError } = await supabase
         .from(`${course}_lectures`)
         .select('NO, LECTURE, DATE, TIME')
-        .contains('attendees', [studentId]);
+        .like('attendees', [studentId]);
 
       if (attendedError) {
         console.error("Error fetching attended lectures:", attendedError);
