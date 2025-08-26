@@ -1,175 +1,360 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClassCount</title>
-<style>
-    :root{--primary-color:#243b8f;--primary-dark:#1b2e6d;--light-gray:#f4f6fa;--text-color:#333;--text-light:#666;--white-color:#ffffff;--green-accent:#28a745;--border-radius:12px;--shadow:0 4px 12px rgba(0,0,0,.08);--fab-size:56px}
-    *{margin:0;padding:0;box-sizing:border-box}
-    html{font-size:16px}
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:var(--light-gray);color:var(--text-color)}
-    .app-container{display:flex;flex-direction:column;min-height:100vh}
-    header{background-color:var(--primary-color);color:var(--white-color);padding:1rem 1.5rem;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-    header h1{margin:0;font-size:1.5rem;font-weight:600}
-    main{flex-grow:1;padding:1.5rem;max-width:1200px;width:100%;margin:0 auto}
-    .tab-buttons{display:flex;background-color:var(--white-color);border-radius:var(--border-radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:2rem}
-    .tab-btn{flex:1;padding:1rem .5rem;background-color:transparent;border:none;font-size:1rem;font-weight:600;cursor:pointer;transition:all .3s ease;color:var(--text-light);border-bottom:3px solid transparent}
-    .tab-btn.active{color:var(--primary-color);border-bottom:3px solid var(--primary-color)}
-    .card-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
-    .card{background:var(--white-color);padding:1.5rem;border-radius:var(--border-radius);box-shadow:var(--shadow);transition:transform .3s ease,box-shadow .3s ease;display:flex;flex-direction:column}
-    .card:hover{transform:translateY(-5px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
-    .title{font-size:1.25rem;font-weight:600;margin-bottom:.5rem;color:var(--primary-dark)}
-    .details{font-size:.9rem;color:var(--text-light);margin-bottom:1rem}
-    .details span{margin-right:1rem}
-    .stats{font-size:1rem;font-weight:700;color:var(--green-accent);margin-bottom:1.5rem}
-    .view-btn{margin-top:auto;display:inline-block;padding:.75rem 1.5rem;background-color:var(--primary-color);color:var(--white-color);border-radius:8px;text-decoration:none;text-align:center;font-weight:600;transition:background-color .3s ease}
-    .view-btn:hover{background-color:var(--primary-dark)}
-    footer{text-align:center;padding:1.5rem;font-size:.875rem;color:#999}
-    .tab-content{display:none}
-    .tab-content.active{display:block}
-    .fab-overlay{position:fixed;inset:0;background-color:rgba(0,0,0,.6);z-index:998;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
-    .fab-overlay.active{opacity:1;visibility:visible;transition:opacity .3s ease}
-    .fab-container{position:fixed;bottom:2rem;right:2rem;z-index:999;display:flex;align-items:center;gap:1rem}
-    .fab{width:var(--fab-size);height:var(--fab-size);border-radius:50%;background-color:var(--primary-color);color:var(--white-color);border:none;box-shadow:0 4px 12px rgba(0,0,0,.25);font-size:28px;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:transform .3s ease,background-color .3s ease;order:2}
-    .fab:hover{background-color:var(--primary-dark)}
-    .fab-options{display:flex;flex-direction:row-reverse;align-items:center;gap:1.5rem;order:1;visibility:hidden;opacity:0;transform:translateX(20px);transition:all .3s ease}
-    .fab-option{text-decoration:none}
-    .fab-option-label{background:var(--white-color);padding:.6rem 1rem;border-radius:8px;box-shadow:var(--shadow);font-size:1rem;font-weight:600;color:var(--primary-dark);white-space:nowrap}
-    .fab-container.active .fab{transform:rotate(135deg)}
-    .fab-container.active .fab-options{visibility:visible;opacity:1;transform:translateX(0)}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassCount Pro</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --light-gray: #f3f4f6;
+            --medium-gray: #d1d5db;
+            --dark-gray: #374151;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --white: #ffffff;
+            --green-accent: #10b981;
+            --border-radius: 0.75rem;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --fab-size: 56px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            font-size: 16px;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background: var(--white);
+            color: var(--primary-color);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--medium-gray);
+            box-shadow: var(--shadow);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        main {
+            flex-grow: 1;
+            padding: 1.5rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .tab-buttons {
+            display: flex;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem .5rem;
+            background-color: transparent;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s ease;
+            color: var(--text-light);
+            border-radius: 0.5rem;
+        }
+        .tab-btn.active {
+            color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: transform .2s ease, box-shadow .2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: .5rem;
+            color: var(--dark-gray);
+        }
+        .card-details {
+            font-size: .9rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .card-stats {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--green-accent);
+            margin-bottom: 1.5rem;
+        }
+        .view-btn {
+            margin-top: auto;
+            display: inline-block;
+            padding: .75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            transition: background-color .2s ease;
+        }
+        .view-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .status-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+            font-weight: 500;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .fab-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, .6);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .3s ease, visibility 0s .3s;
+        }
+        .fab-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity .3s ease;
+        }
+        .fab-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .fab {
+            width: var(--fab-size);
+            height: var(--fab-size);
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform .3s ease, background-color .2s ease;
+            order: 2;
+        }
+        .fab:hover { background-color: var(--primary-hover); }
+        .fab-options {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            gap: 1.5rem;
+            order: 1;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all .3s ease;
+        }
+        .fab-option-label {
+            background: var(--white);
+            padding: .6rem 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            white-space: nowrap;
+        }
+        .fab-container.active .fab { transform: rotate(135deg); }
+        .fab-container.active .fab-options {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
 </head>
 <body>
 
 <div class="app-container">
     <header>
-        <h1>ClassCount</h1>
+        <h1>ClassCount Pro</h1>
     </header>
-
     <main>
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('lectures', event)">Lectures</button>
-            <button class="tab-btn" onclick="switchTab('events', event)">Events</button>
+            <button id="tab-btn-lectures" class="tab-btn active" data-tab="lectures">Lectures</button>
+            <button id="tab-btn-events" class="tab-btn" data-tab="events">Events</button>
         </div>
-
         <div id="lectures" class="tab-content active">
-            <div class="card-container" id="lectures-container"></div>
+            <div class="card-container" id="lectures-container">
+                </div>
         </div>
-
         <div id="events" class="tab-content">
-            <div class="card-container" id="events-container"></div>
+            <div class="card-container" id="events-container">
+                </div>
         </div>
     </main>
-
-    <footer>
-        Made by Developers of BAFs App.
-    </footer>
 </div>
 
 <div class="fab-overlay" id="fab-overlay"></div>
 <div class="fab-container" id="fab-container">
     <div class="fab-options">
-        <a id="add-lecture" class="fab-option">
+        <a id="add-lecture" href="#">
             <span class="fab-option-label">Add Lecture</span>
         </a>
-        <a id="add-event" class="fab-option">
+        <a id="add-event" href="#">
             <span class="fab-option-label">Add Event</span>
         </a>
     </div>
     <button class="fab" id="fab">&plus;</button>
 </div>
 
-<script>
+<script type="module">
+    // CORRECTED: Import Supabase as an ES Module
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
     const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
-    let supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // --- DOM Elements ---
+    const lecturesContainer = document.getElementById("lectures-container");
+    const eventsContainer = document.getElementById("events-container");
+    const tabButtons = document.querySelector(".tab-buttons");
+    
+    // --- Helper Functions ---
+    function getCourse() {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; course=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return "sybaf"; // Default course
+    }
+    
+    const course = getCourse();
 
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
+    // NEW: Reusable function to create cards, avoiding code duplication
+    function createCard(item, type) {
+        const isLecture = type === 'lecture';
+        
+        // Use the 'attendees' array for count, which is more robust
+        const participantCount = Array.isArray(item.attendees) ? item.attendees.length : 0;
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <div class="card-title">${isLecture ? item.LECTURE : item.EVENTS}</div>
+            <div class="card-details">
+                <span>📅 ${item.DATE}</span>
+                <span>🕒 ${item.TIME}</span>
+            </div>
+            <div class="card-stats">${isLecture ? 'Present' : 'Participants'}: ${participantCount}</div>
+            <a href="${isLecture ? 'view.html' : 'viewEvent.html'}?no=${item.NO}&course=${course}" class="view-btn">
+                View ${isLecture ? 'Attendance' : 'Participants'}
+            </a>
+        `;
+        return card;
+    }
+    
+    // NEW: Function to show loading or status messages
+    function showStatusMessage(container, message) {
+        container.innerHTML = `<div class="status-message">${message}</div>`;
     }
 
-    // Course prefix from cookie (default sybaf)
-    const course = (getCookie("course") || "sybaf").toLowerCase();
+    // --- Data Loading Functions ---
+    async function loadData(type) {
+        const isLecture = type === 'lecture';
+        const container = isLecture ? lecturesContainer : eventsContainer;
+        const tableName = `${course}_${isLecture ? 'lectures' : 'events'}`;
+        
+        showStatusMessage(container, 'Loading...');
 
-    function getSupabaseClient() {
-      if (!supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      }
-      return supabase;
+        const { data, error } = await supabase
+            .from(tableName)
+            .select("*")
+            .order("NO", { ascending: false });
+
+        if (error) {
+            console.error(`Error fetching ${type}s:`, error);
+            showStatusMessage(container, `Could not load ${type}s. Please try again later.`);
+            return;
+        }
+        
+        container.innerHTML = ""; // Clear the container
+        
+        if (data.length === 0) {
+            showStatusMessage(container, `No ${type}s found.`);
+            return;
+        }
+        
+        data.forEach(item => {
+            const card = createCard(item, type);
+            container.appendChild(card);
+        });
     }
 
-    function switchTab(tabName, event) {
+    // --- Tab Switching Logic ---
+    function switchTab(tabName) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
         document.getElementById(tabName).classList.add('active');
-        event.currentTarget.classList.add('active');
+        document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
 
-        if (tabName === 'lectures') {
-            loadLectures();
-        } else if (tabName === 'events') {
-            loadEvents();
-        }
+        // Load data for the activated tab
+        loadData(tabName === 'lectures' ? 'lecture' : 'event');
     }
 
-    async function loadLectures() {
-        const supabase = getSupabaseClient();
-        const tableName = `${course}_lectures`;
-        const { data, error } = await supabase.from(tableName).select("*").order("NO", { ascending: false });
-        if (error) {
-            console.error("Error fetching lectures:", error);
-            return;
+    tabButtons.addEventListener('click', (e) => {
+        const tabBtn = e.target.closest('.tab-btn');
+        if (tabBtn) {
+            switchTab(tabBtn.dataset.tab);
         }
-        const container = document.getElementById("lectures-container");
-        container.innerHTML = "";
-        data.forEach(lecture => {
-            const presentCount = lecture.IDS ? lecture.IDS.split(",").filter(id => id.trim() !== "").length : 0;
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <div class="title">${lecture.LECTURE}</div>
-                <div class="details">
-                    <span>${lecture.DATE}</span>
-                    <span>${lecture.TIME}</span>
-                </div>
-                <div class="stats">Present: ${presentCount}</div>
-                <a href="view.html?no=${lecture.NO}&course=${course}" class="view-btn">View Attendance</a>
-            `;
-            container.appendChild(card);
-        });
-    }
+    });
 
-    async function loadEvents() {
-        const supabase = getSupabaseClient();
-        const tableName = `${course}_events`;
-        const { data, error } = await supabase.from(tableName).select("*").order("NO", { ascending: false });
-        if (error) {
-            console.error("Error fetching events:", error);
-            return;
-        }
-        const container = document.getElementById("events-container");
-        container.innerHTML = "";
-        data.forEach(event => {
-            const participantCount = event.IDS ? event.IDS.split(",").filter(id => id.trim() !== "").length : 0;
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <div class="title">${event.EVENTS}</div>
-                <div class="details">
-                    <span>${event.DATE}</span>
-                    <span>${event.TIME}</span>
-                </div>
-                <div class="stats">Participants: ${participantCount}</div>
-                <a href="viewEvent.html?no=${event.NO}&course=${course}" class="view-btn">View Participants</a>
-            `;
-            container.appendChild(card);
-        });
-    }
-
+    // --- Floating Action Button (FAB) Logic ---
     const fabContainer = document.getElementById('fab-container');
     const fabButton = document.getElementById('fab');
     const fabOverlay = document.getElementById('fab-overlay');
@@ -182,10 +367,13 @@
     fabButton.addEventListener('click', toggleFabMenu);
     fabOverlay.addEventListener('click', toggleFabMenu);
 
+    // --- Initial Load ---
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("add-lecture").href = `add.html?course=${course}`;
-        document.getElementById("add-event").href   = `addEvent.html?course=${course}`;
-        loadLectures();
+        document.getElementById("add-event").href = `addEvent.html?course=${course}`;
+        
+        // Load data for the default active tab
+        loadData('lecture');
     });
 </script>
 
