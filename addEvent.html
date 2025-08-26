@@ -379,7 +379,8 @@
       EVENTS: eventName,
       DATE: toDDMMYYYY(dateISO),
       TIME: `${to12HourFormat(startTime)} - ${to12HourFormat(endTime)}`,
-      participants: Array.from(selectedIds).map(String)
+      // UPDATED: Changed column name to 'attendees'
+      attendees: Array.from(selectedIds).map(String) 
     };
     
     const eventsTable = `${course}_events`;
