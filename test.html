@@ -71,7 +71,7 @@
         </div>
         <div class="card p-6 flex items-center bg-gradient-to-br from-red-500 to-rose-600 text-white">
           <div class="p-3 rounded-full bg-white bg-opacity-20"><lucide-icon name="user-x" class="h-7 w-7"></lucide-icon></div>
-          <div class="ml-4"><p class="text-sm opacity-80">Danger Zone (&lt;60%)</p><p id="danger-zone" class="text-3xl font-bold">0</p></div>
+          <div class="ml-4"><p class="text-sm opacity-80">Danger Zone (&lt;50%)</p><p id="danger-zone" class="text-3xl font-bold">0</p></div>
         </div>
       </div>
 
@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tableBody = document.getElementById("student-table-body");
   tableBody.innerHTML = "";
   enriched.forEach(s => {
-    const status = s.attendance >= 75 ? "Safe" : s.attendance >= 60 ? "Warning" : "Danger";
+    const status = s.attendance >= 75 ? "Safe" : s.attendance >= 50 ? "Warning" : "Danger";
     const badge = status === "Safe" ? "badge-safe" : status === "Warning" ? "badge-warning" : "badge-danger";
     const row = `<tr class="border-b hover:bg-gray-50">
       <td class="p-4 text-sm text-gray-700">${s.id}</td>
@@ -340,15 +340,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("total-students").textContent = enriched.length;
   document.getElementById("safe-zone").textContent = enriched.filter(s=>s.attendance>=75).length;
-  document.getElementById("warning-zone").textContent = enriched.filter(s=>s.attendance>=60&&s.attendance<75).length;
-  document.getElementById("danger-zone").textContent = enriched.filter(s=>s.attendance<60).length;
+  document.getElementById("warning-zone").textContent = enriched.filter(s=>s.attendance>=&&s.attendance<75).length;
+  document.getElementById("danger-zone").textContent = enriched.filter(s=>s.attendance<50).length;
 
   renderTrendChart(lectures, students);
   renderRecentLectures(lectures, students);
 
   new Chart(document.getElementById("distributionChart"), {
     type:"doughnut",
-    data:{ labels:["Safe","Warning","Danger"], datasets:[{ data:[enriched.filter(s=>s.attendance>=75).length, enriched.filter(s=>s.attendance>=60&&s.attendance<75).length, enriched.filter(s=>s.attendance<60).length], backgroundColor:["#10b981","#f59e0b","#ef4444"] }] }
+    data:{ labels:["Safe","Warning","Danger"], datasets:[{ data:[enriched.filter(s=>s.attendance>=75).length, enriched.filter(s=>s.attendance>=50&&s.attendance<75).length, enriched.filter(s=>s.attendance<50).length], backgroundColor:["#10b981","#f59e0b","#ef4444"] }] }
   });
 
   new Chart(document.getElementById("subjectAttendanceChart"), {
