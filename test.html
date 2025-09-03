@@ -340,7 +340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("total-students").textContent = enriched.length;
   document.getElementById("safe-zone").textContent = enriched.filter(s=>s.attendance>=75).length;
-  document.getElementById("warning-zone").textContent = enriched.filter(s=>s.attendance>=&&s.attendance<75).length;
+  document.getElementById("warning-zone").textContent = enriched.filter(s=>s.attendance>=50&&s.attendance<75).length;
   document.getElementById("danger-zone").textContent = enriched.filter(s=>s.attendance<50).length;
 
   renderTrendChart(lectures, students);
