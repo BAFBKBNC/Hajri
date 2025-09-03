@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mentor Dashboard - ClassCount Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+    .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
+    .badge-safe { background-color: #dcfce7; color: #166534; }
+    .badge-warning { background-color: #fef9c3; color: #854d0e; }
+    .badge-danger { background-color: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <div class="hidden md:flex flex-col w-64 bg-gray-900 text-gray-200 shadow-xl">
+    <div class="flex items-center justify-center h-20 header-gradient text-white">
+      <lucide-icon name="graduation-cap" class="h-8 w-8 mr-3"></lucide-icon>
+      <span class="text-2xl font-bold">ClassCount</span>
+    </div>
+    <nav class="flex flex-col flex-grow p-4">
+      <a href="#" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
+        <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
+        <span>Dashboard</span>
+      </a>
+      <!-- Student Option -->
+      <a href="students.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
+        <span>Students</span>
+      </a>
+      <!-- Logout -->
+      <a href="login.html" class="flex items-center px-4 py-3 mt-auto text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
+        <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
+        <span>Logout</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex flex-col flex-1 overflow-y-auto">
+    <header class="flex items-center justify-between h-20 px-4 sm:px-8 bg-white border-b shadow-sm sticky top-0 z-10">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Mentor Dashboard</h1>
+      <div class="flex items-center space-x-4">
+        <div class="text-sm text-gray-600 text-right">
+          <p class="font-semibold">Prof. Vaibhav Narule</p>
+          <p id="current-date" class="text-xs"></p>
+        </div>
+        <img class="w-12 h-12 rounded-full object-cover border-2 border-indigo-500" src="https://i.pravatar.cc/150?img=6" alt="Mentor Avatar">
+      </div>
+    </header>
+
+    <main class="p-4 sm:p-8 space-y-8">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="card p-6 flex items-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+          <div class="p-3 rounded-full bg-white bg-opacity-20"><lucide-icon name="users-2" class="h-7 w-7"></lucide-icon></div>
+          <div class="ml-4"><p class="text-sm opacity-80">Total Students</p><p id="total-students" class="text-3xl font-bold">0</p></div>
+        </div>
+        <div class="card p-6 flex items-center bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+          <div class="p-3 rounded-full bg-white bg-opacity-20"><lucide-icon name="user-check" class="h-7 w-7"></lucide-icon></div>
+          <div class="ml-4"><p class="text-sm opacity-80">Safe Zone</p><p id="safe-zone" class="text-3xl font-bold">0</p></div>
+        </div>
+        <div class="card p-6 flex items-center bg-gradient-to-br from-yellow-500 to-amber-600 text-white">
+          <div class="p-3 rounded-full bg-white bg-opacity-20"><lucide-icon name="user-cog" class="h-7 w-7"></lucide-icon></div>
+          <div class="ml-4"><p class="text-sm opacity-80">Warning Zone</p><p id="warning-zone" class="text-3xl font-bold">0</p></div>
+        </div>
+        <div class="card p-6 flex items-center bg-gradient-to-br from-red-500 to-rose-600 text-white">
+          <div class="p-3 rounded-full bg-white bg-opacity-20"><lucide-icon name="user-x" class="h-7 w-7"></lucide-icon></div>
+          <div class="ml-4"><p class="text-sm opacity-80">Danger Zone</p><p id="danger-zone" class="text-3xl font-bold">0</p></div>
+        </div>
+      </div>
+
+      <!-- Student Records -->
+      <div class="card p-6">
+        <h2 class="text-xl font-semibold mb-4">Student Records</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-4">ID</th>
+                <th class="p-4">Student Name</th>
+                <th class="p-4">Overall Attendance</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="student-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const supabaseUrl = "https://pwgdubtbvqnmivtupbvx.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+// --- Helpers ---
+function getCourseFromCookie() {
+  const match = document.cookie.match(new RegExp('(^| )course=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+function getStatus(percentage) {
+  if (percentage >= 75) return { text: 'Safe', class: 'badge-safe' };
+  if (percentage >= 60) return { text: 'Warning', class: 'badge-warning' };
+  return { text: 'Danger', class: 'badge-danger' };
+}
+
+// --- Fetch from Supabase ---
+async function fetchStudents(course) {
+  const { data, error } = await supabaseClient.from(`${course}_students`).select('id, name');
+  if (error) { console.error(error); return []; }
+  return data;
+}
+
+async function fetchLectures(course) {
+  const { data, error } = await supabaseClient.from(`${course}_lectures`).select('id, attendees');
+  if (error) { console.error(error); return []; }
+  return data;
+}
+
+function calculateAttendance(students, lectures) {
+  return students.map(student => {
+    const attended = lectures.filter(l => l.attendees.includes(student.id.toString())).length;
+    const percentage = lectures.length > 0 ? Math.round((attended / lectures.length) * 100) : 0;
+    return { ...student, attendance: percentage };
+  });
+}
+
+// --- Render ---
+function renderTable(studentData) {
+  const tableBody = document.getElementById("student-table-body");
+  tableBody.innerHTML = "";
+  studentData.forEach(s => {
+    const status = getStatus(s.attendance);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="p-4">${s.id}</td>
+      <td class="p-4 font-medium">${s.name}</td>
+      <td class="p-4">${s.attendance}%</td>
+      <td class="p-4"><span class="px-3 py-1 text-xs font-medium rounded-full ${status.class}">${status.text}</span></td>
+      <td class="p-4"><a href="adminprofile.html?id=${s.id}" class="text-indigo-600 hover:underline">View Details</a></td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+function updateSummaryCards(studentData) {
+  document.getElementById("total-students").textContent = studentData.length;
+  document.getElementById("safe-zone").textContent = studentData.filter(s => s.attendance >= 75).length;
+  document.getElementById("warning-zone").textContent = studentData.filter(s => s.attendance >= 60 && s.attendance < 75).length;
+  document.getElementById("danger-zone").textContent = studentData.filter(s => s.attendance < 60).length;
+}
+
+// --- Main Loader ---
+async function loadDashboard() {
+  const course = getCourseFromCookie();
+  if (!course) return alert("Course not found in cookie");
+
+  const students = await fetchStudents(course);
+  const lectures = await fetchLectures(course);
+  let studentRecords = calculateAttendance(students, lectures);
+
+  // Sort high → low
+  studentRecords.sort((a, b) => b.attendance - a.attendance);
+
+  renderTable(studentRecords);
+  updateSummaryCards(studentRecords);
+}
+
+document.addEventListener("DOMContentLoaded", loadDashboard);
+</script>
+</body>
+</html>
