@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px_12px rgba(0, 0, 0, 0.06); }
+    .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
     .badge-safe { background-color: #dcfce7; color: #166534; }
     .badge-warning { background-color: #fef9c3; color: #854d0e; }
@@ -76,7 +76,7 @@
       </div>
 
       <div class="card p-6">
-        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2"><lucide-icon name="line-chart" class="h-5 w-5 text-indigo-600"></lucide-icon>Overall Attendance Trend (Last 30 Days)</h2>
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2"><lucide-icon name="line-chart" class="h-5 w-5 text-indigo-600"></lucide-icon>Overall Attendance Trend (Last 30 Lectures)</h2>
         <div class="h-96 w-full"><canvas id="attendanceTrendChart"></canvas></div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -190,20 +190,29 @@ function sortTable(colIndex) {
 
 // ====== Charts & Tables ======
 /**
- * [FIXED] Aggregates daily attendance to show a clear trend instead of plotting every single lecture.
+ * Helper function to parse 'DD/MM/YYYY' string into a valid Date object.
+ * @param {string} dateString - The date string in DD/MM/YYYY format.
+ * @returns {Date} A JavaScript Date object.
+ */
+function parseDDMMYYYY(dateString) {
+    const [day, month, year] = dateString.split('/');
+    // Month is 0-indexed in JavaScript Date constructor (0 for January)
+    return new Date(year, month - 1, day);
+}
+
+/**
+ * [MODIFIED] Renders a trend chart for the last 30 lectures.
  */
 function renderTrendChart(lectures, students) {
-    const today = new Date();
-    const cutoff = new Date();
-    cutoff.setDate(today.getDate() - 30);
-    
-    const recentLectures = lectures.filter(l => {
-        const lectureDate = new Date(l.DATE);
-        return lectureDate >= cutoff && lectureDate <= today;
-    });
+    // 1. Sort all lectures chronologically to properly select the last ones
+    const sortedLectures = [...lectures].sort((a, b) => parseDDMMYYYY(a.DATE) - parseDDMMYYYY(b.DATE));
 
-    const dailyData = recentLectures.reduce((acc, lecture) => {
-        const dateStr = lecture.DATE;
+    // 2. Get the last 30 lectures (or fewer if not available)
+    const last30Lectures = sortedLectures.slice(-30);
+    
+    // 3. Aggregate data by date to average out multiple lectures on the same day
+    const dailyData = last30Lectures.reduce((acc, lecture) => {
+        const dateStr = lecture.DATE; // Use the original string as the key
         if (!acc[dateStr]) {
             acc[dateStr] = { totalAttendees: 0, lectureCount: 0 };
         }
@@ -212,6 +221,7 @@ function renderTrendChart(lectures, students) {
         return acc;
     }, {});
 
+    // 4. Prepare data for the chart, sorting the aggregated points by date
     const chartData = Object.keys(dailyData)
         .map(date => ({
             date: date,
@@ -219,9 +229,9 @@ function renderTrendChart(lectures, students) {
                 (dailyData[date].totalAttendees / (dailyData[date].lectureCount * students.length)) * 100
             ) : 0
         }))
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        .sort((a, b) => parseDDMMYYYY(a.date) - parseDDMMYYYY(b.date));
 
-    const labels = chartData.map(item => new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+    const labels = chartData.map(item => parseDDMMYYYY(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
     const data = chartData.map(item => item.avgAttendance);
 
     new Chart(document.getElementById("attendanceTrendChart"), {
@@ -229,7 +239,7 @@ function renderTrendChart(lectures, students) {
         data: {
             labels: labels,
             datasets: [{
-                label: "Average Daily Attendance %",
+                label: "Average Attendance % (Last 30 Lectures)",
                 data: data,
                 borderColor: "#4f46e5",
                 backgroundColor: "rgba(79, 70, 229, 0.1)",
@@ -245,18 +255,22 @@ function renderTrendChart(lectures, students) {
     });
 }
 
+
 /**
- * [FIXED] Formats dates for better readability and handles cases with no recent lectures.
+ * [MODIFIED] Shows the last 5 lectures that have already occurred.
  */
 function renderRecentLectures(lectures, students) {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Compare dates only, not time
     const body = document.getElementById("recent-lectures-body");
     body.innerHTML = ""; 
 
+    // Filter for past/present lectures and sort by most recent
     const sorted = [...lectures]
-        .filter(l => new Date(l.DATE) <= today)
-        .sort((a, b) => new Date(b.DATE) - new Date(a.DATE));
+        .filter(l => parseDDMMYYYY(l.DATE) <= today)
+        .sort((a, b) => parseDDMMYYYY(b.DATE) - parseDDMMYYYY(a.DATE));
     
+    // Take the 5 most recent
     const recent = sorted.slice(0, 5);
 
     if (recent.length === 0) {
@@ -269,7 +283,7 @@ function renderRecentLectures(lectures, students) {
         const total = students.length;
         const percent = total > 0 ? Math.round((count / total) * 100) : 0;
         
-        const formattedDate = new Date(l.DATE).toLocaleDateString("en-GB", {
+        const formattedDate = parseDDMMYYYY(l.DATE).toLocaleDateString("en-GB", {
             day: 'numeric', month: 'long', year: 'numeric'
         });
 
@@ -293,11 +307,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const studentsTable = `${course}_students`;
   const lecturesTable = `${course}_lectures`;
 
-  const { data: students } = await supabaseClient.from(studentsTable).select("id,name");
-  const { data: lectures } = await supabaseClient.from(lecturesTable).select("DATE,LECTURE,attendees");
+  const { data: students, error: studentsError } = await supabaseClient.from(studentsTable).select("id,name");
+  const { data: lectures, error: lecturesError } = await supabaseClient.from(lecturesTable).select("DATE,LECTURE,attendees");
+
+  if (studentsError || lecturesError || !students || !lectures) {
+      console.error("Error fetching data:", studentsError || lecturesError);
+      // Optionally display an error message to the user
+      return;
+  }
 
   const enriched = students.map(s => {
-    const attended = lectures.filter(l => l.attendees.includes(s.id.toString())).length;
+    const attended = lectures.filter(l => l.attendees && l.attendees.includes(s.id.toString())).length;
     const percentage = lectures.length ? Math.round((attended/lectures.length)*100) : 0;
     return { ...s, attendance: percentage };
   }).sort((a,b)=>b.attendance - a.attendance);
@@ -337,7 +357,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       datasets:[{ label:"Avg %", data:[...new Set(lectures.map(l=>l.LECTURE))].map(sub=>{
         const ls=lectures.filter(l=>l.LECTURE===sub);
         const totalPossible = ls.length*students.length;
-        const totalAttended = ls.reduce((s,l)=>s+l.attendees.length,0);
+        const totalAttended = ls.reduce((s,l)=>s+(l.attendees ? l.attendees.length : 0),0);
         return totalPossible > 0 ? Math.round(totalAttended/totalPossible*100) : 0;
       }), backgroundColor:"#3b82f6" }]
     }
