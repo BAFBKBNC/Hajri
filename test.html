@@ -174,20 +174,40 @@
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = offset;
   }
+
+  // NEW: Function to get full course name from course code
+  function getFullCourseName(courseCode = '') {
+      const code = courseCode.toLowerCase();
+      const courseMap = {
+          'fyba': 'FY BA', 'fybcom': 'FY BCOM', 'fybsc': 'FY BSC', 'fybms': 'FY BCOM (Management Studies)', 'fybaf': 'FY BCOM (Accounting & Finance)', 'fybfm': 'FY BCOM (Financial Markets)', 'fybsccs': 'FY BSC (Computer Science)',
+          'syba': 'SY BA', 'sybcom': 'SY BCOM', 'sybsc': 'SY BSC', 'sybms': 'SY BCOM (Management Studies)', 'sybaf': 'SY BCOM (Accounting & Finance)', 'sybfm': 'SY BCOM (Financial Markets)', 'sybsccs': 'SY BSC (Computer Science)',
+          'tyba': 'TY BA', 'tybcom': 'TY BCOM', 'tybsc': 'TY BSC', 'tybms': 'TY BCOM (Management Studies)', 'tybaf': 'TY BCOM (Accounting & Finance)', 'tybfm': 'TY BCOM (Financial Markets)', 'tybsccs': 'TY BSC (Computer Science)'
+      };
+      return courseMap[code] || code.toUpperCase(); // Fallback to uppercase code
+  }
   
   // --- UI UPDATE FUNCTIONS ---
   
-  function displayProfileInfo(student) {
+  function displayProfileInfo(student, courseCode) {
       const studentName = student.name || 'N/A';
       document.getElementById('profile-initial-main').textContent = studentName.charAt(0).toUpperCase();
       document.getElementById('profile-name').textContent = studentName;
-      document.getElementById('profile-course-year').textContent = `${student.course || 'Course N/A'} - ${student.year || 'Year N/A'}`;
+
+      // NEW: Derive year and full course name from the URL course code
+      const year = courseCode.substring(0, 2).toUpperCase();
+      const fullCourseName = getFullCourseName(courseCode);
+      document.getElementById('profile-course-year').textContent = `${fullCourseName} - ${year}`;
+      
       document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
   }
 
+  // UPDATED: Handles 'roles' column and checks for "No Tags"
   function displayRolesAndTags(tags) {
       const container = document.getElementById('roles-tags-list');
-      if (!tags || tags.length === 0) return;
+      if (!tags || tags.length === 0 || (tags.length === 1 && tags[0] === 'No Tags')) {
+          container.innerHTML = `<p class="text-sm text-gray-500">No roles or tags assigned.</p>`;
+          return;
+      }
       
       container.innerHTML = '';
       tags.forEach(tag => {
@@ -204,7 +224,6 @@
   function displayOverallAttendance(attendedCount, totalCount) {
       const percent = totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
       document.getElementById('attendancePercent').textContent = `${percent}%`;
-      
       const statusText = document.getElementById('attendanceStatusText');
       const progressCircle = document.getElementById('progress-circle');
       
@@ -276,8 +295,9 @@
         document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
         return;
     }
+    // UPDATED: Fetching the 'roles' column specifically
     const [studentRes, lecturesRes, eventsRes] = await Promise.all([
-        supabase.from(`${course}_students`).select('*').eq('id', studentId).single(),
+        supabase.from(`${course}_students`).select('*, roles').eq('id', studentId).single(),
         supabase.from(`${course}_lectures`).select('NO, LECTURE, DATE, TIME, attendees'),
         supabase.from(`${course}_events`).select('NO, EVENTS, DATE, TIME, attendees')
     ]);
@@ -288,8 +308,8 @@
         return;
     }
     const student = studentRes.data;
-    displayProfileInfo(student);
-    displayRolesAndTags(student.roles_tags); // Assumes 'roles_tags' is an array column
+    displayProfileInfo(student, course); // Pass course code for processing
+    displayRolesAndTags(student.roles); // Pass student.roles from the DB
 
     const allLectures = lecturesRes.data || [];
     const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
