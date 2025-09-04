@@ -83,7 +83,7 @@
 </div>
 
 <script>
-    // Initialize Supabase Client (Use the same credentials as your dashboard)
+    // Initialize Supabase Client
     const supabaseUrl = "https://pwgdubtbvqnmivtupbvx.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -108,9 +108,8 @@
     const submitButton = document.getElementById('submit-button');
 
     loginForm.addEventListener('submit', async function(event) {
-        event.preventDefault(); // Prevents the page from reloading
+        event.preventDefault();
         
-        // Disable button and show loading state
         submitButton.disabled = true;
         submitButton.textContent = 'Signing in...';
 
@@ -118,39 +117,37 @@
         const password = document.getElementById('password').value;
 
         try {
-            // Fetch the admin record from Supabase table "admins"
-            const { data, error } = await supabaseClient
-                .from('admins')
-                .select('id, Name, password') // Note: 'Name' is case-sensitive
-                .eq('id', adminId)
-                .single(); // Use .single() as ID should be unique
+            // Call the secure database function 'login_admin'
+            const { data, error } = await supabaseClient.rpc('login_admin', {
+                p_admin_id: adminId,
+                p_password: password
+            });
 
-            if (error || !data) {
-                throw new Error("Invalid ID or network issue.");
+            if (error) {
+                // This catches RPC-level errors
+                throw new Error("An error occurred during login. Please try again.");
             }
 
-            // Check if the password matches
-            if (data.password === password) {
-                // SUCCESS: Passwords match
+            // The function returns user data on success, or null on failure
+            if (data) {
+                // SUCCESS: User data was returned
                 alert('Login Successful! Redirecting...');
 
-                // Store details in cookies for 1 hour
+                // Store details from the returned data in cookies for 1 hour
                 setCookie('id', data.id, 1);
                 setCookie('name', data.Name, 1);
-                setCookie('course', 'sybaf', 1); // Set course cookie
+                setCookie('course', 'sybaf', 1);
 
-                // Redirect to the main dashboard page
-                window.location.href = 'index.html';
+                window.location.href = 'dashboard.html';
 
             } else {
-                // FAILURE: Passwords do not match
-                throw new Error("Incorrect password.");
+                // FAILURE: The function returned null (invalid credentials)
+                throw new Error("Invalid ID or password.");
             }
 
         } catch (error) {
             alert(`Login Failed: ${error.message}`);
         } finally {
-            // Re-enable the button and restore text
             submitButton.disabled = false;
             submitButton.textContent = 'Sign in';
         }
