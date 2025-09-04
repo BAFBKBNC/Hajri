@@ -11,6 +11,7 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
+    .profile-header-card { background: linear-gradient(135deg, #4f46e5, #6366f1); }
     .progress-ring__circle {
       transition: stroke-dashoffset 0.6s ease-out;
       transform: rotate(-90deg);
@@ -66,58 +67,60 @@
     </header>
 
     <main class="p-4 sm:p-8">
+        <div class="profile-header-card text-white p-6 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <div id="profile-initial-main" class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 text-white flex-shrink-0 flex items-center justify-center text-5xl font-bold border-4 border-white/50">
+                    ?
+                </div>
+                <div>
+                    <h2 id="profile-name" class="text-3xl font-bold">Loading...</h2>
+                    <p id="profile-course-year" class="text-indigo-200 font-medium mt-1"></p>
+                    <p class="text-sm text-indigo-200 mt-2">Mentor: <span id="profile-mentor" class="font-semibold"></span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-center">
+                <div class="relative w-28 h-28">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-white/20" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                        <circle id="progress-circle" class="progress-ring__circle text-white" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="attendancePercent" class="text-2xl font-bold">--%</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-lg font-semibold">Overall Attendance</p>
+                    <p id="attendanceStatusText" class="font-bold text-xl mt-1">--</p>
+                </div>
+            </div>
+        </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <div class="lg:col-span-2 space-y-8">
           
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Overall Attendance</h2>
-            <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start sm:space-x-6">
-              <div class="relative w-36 h-36">
-                <svg class="w-full h-full" viewBox="0 0 100 100">
-                  <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                  <circle id="progress-circle" class="progress-ring__circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                </svg>
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <span id="attendancePercent" class="text-3xl font-bold text-indigo-600">--%</span>
-                </div>
-              </div>
-              <div class="text-center sm:text-left mt-4 sm:mt-0">
-                <p id="attendanceStatusText" class="text-3xl font-bold">--</p>
-                <p class="text-sm text-gray-500 mt-1">Minimum 75% required for good standing.</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b"><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
-             <div class="overflow-x-auto"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b"><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
-             <div id="recent-lectures-list" class="divide-y divide-gray-200"></div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b"><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
-             <div id="recent-activities-list" class="divide-y divide-gray-200"></div>
-          </div>
-
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Weekly Test Insights</h2>
-            <div class="text-center text-gray-500 py-8">
-              <lucide-icon name="bar-chart-3" class="mx-auto h-12 w-12 text-gray-400"></lucide-icon>
-              <p class="mt-4 font-medium">No insights available currently.</p>
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="tags" class="w-5 h-5 text-indigo-500"></lucide-icon>Roles & Tags</h3>
+            <div id="roles-tags-list" class="flex flex-wrap gap-2">
+              <p class="text-sm text-gray-500">No roles or tags assigned.</p>
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Field Project Details</h2>
+          <div class="bg-white rounded-lg shadow-md">
+             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="book-open-check" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
+             <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-md">
+             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="award" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
+             <div id="recent-activities-list" class="divide-y divide-gray-100"></div>
+          </div>
+
+           <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="clipboard-list" class="w-5 h-5 text-indigo-500"></lucide-icon>Field Project Details</h3>
              <div id="field-project-details" class="space-y-3">
                  <div class="text-center text-gray-500 py-8">
-                    <lucide-icon name="clipboard-list" class="mx-auto h-12 w-12 text-gray-400"></lucide-icon>
-                    <p class="mt-4 font-medium">Project details not yet updated.</p>
+                    <p class="font-medium">Project details not yet updated.</p>
                 </div>
             </div>
           </div>
@@ -126,20 +129,15 @@
 
         <div class="lg:col-span-1 space-y-8">
 
-          <div class="bg-white p-6 rounded-lg shadow-md text-center">
-            <img id="profile-photo" src="https://i.pravatar.cc/150" alt="Profile Photo" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-indigo-200">
-            <h2 id="profile-name" class="text-2xl font-bold text-gray-900">Loading...</h2>
-            <p id="profile-course-year" class="text-indigo-600 font-medium"></p>
-            <div class="mt-4 pt-4 border-t border-gray-200">
-              <p class="text-sm text-gray-500">Mentor</p>
-              <p id="profile-mentor" class="font-semibold text-gray-700"></p>
-            </div>
+          <div class="bg-white rounded-lg shadow-md">
+             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="pie-chart" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
+             <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
           </div>
-
+          
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Roles & Tags</h2>
-            <div id="roles-tags-list" class="flex flex-wrap gap-2">
-              <p class="text-sm text-gray-500">No roles or tags assigned.</p>
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="bar-chart-3" class="w-5 h-5 text-indigo-500"></lucide-icon>Weekly Test Insights</h3>
+            <div class="text-center text-gray-500 py-8">
+              <p class="font-medium">No insights available currently.</p>
             </div>
           </div>
 
@@ -159,19 +157,14 @@
   // --- HELPER FUNCTIONS ---
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    return {
-      studentId: params.get("id"),
-      course: params.get("course")
-    };
+    return { studentId: params.get("id"), course: params.get("course") };
   }
-
   function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
     return null;
   }
-  
   function setProgress(percent) {
     const circle = document.getElementById('progress-circle');
     if (!circle) return;
@@ -185,27 +178,26 @@
   // --- UI UPDATE FUNCTIONS ---
   
   function displayProfileInfo(student) {
-      document.getElementById('profile-photo').src = student.profile_photo_url || 'https://i.pravatar.cc/150';
-      document.getElementById('profile-name').textContent = student.name || 'N/A';
+      const studentName = student.name || 'N/A';
+      document.getElementById('profile-initial-main').textContent = studentName.charAt(0).toUpperCase();
+      document.getElementById('profile-name').textContent = studentName;
       document.getElementById('profile-course-year').textContent = `${student.course || 'Course N/A'} - ${student.year || 'Year N/A'}`;
       document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
   }
 
   function displayRolesAndTags(tags) {
       const container = document.getElementById('roles-tags-list');
-      if (!tags || tags.length === 0) {
-          container.innerHTML = `<p class="text-sm text-gray-500">No roles or tags assigned.</p>`;
-          return;
-      }
+      if (!tags || tags.length === 0) return;
+      
       container.innerHTML = '';
       tags.forEach(tag => {
-          // Simple logic to assign colors based on tag content
-          let colorClasses = 'bg-gray-200 text-gray-800';
+          let colorClasses = 'bg-gray-100 text-gray-800';
           if (['NCC', 'NSS', 'Sports'].includes(tag)) colorClasses = 'bg-blue-100 text-blue-800';
           if (['Good Conduct'].includes(tag)) colorClasses = 'bg-green-100 text-green-800';
           if (['Misbehavior', 'Medically Unstable'].includes(tag)) colorClasses = 'bg-red-100 text-red-800';
+          if (['Class Representative'].includes(tag)) colorClasses = 'bg-indigo-100 text-indigo-800';
           
-          container.innerHTML += `<span class="px-3 py-1 text-xs font-medium rounded-full ${colorClasses}">${tag}</span>`;
+          container.innerHTML += `<span class="px-3 py-1 text-sm font-semibold rounded-full ${colorClasses}">${tag}</span>`;
       });
   }
 
@@ -216,35 +208,28 @@
       const statusText = document.getElementById('attendanceStatusText');
       const progressCircle = document.getElementById('progress-circle');
       
-      let status = "Danger Zone";
-      let statusColor = 'text-red-500';
-      
-      if (percent >= 75) {
-          status = "Good Standing";
-          statusColor = 'text-green-500';
-      } else if (percent >= 50) {
-          status = "Needs Improvement";
-          statusColor = 'text-orange-500';
-      }
+      let status = "Danger";
+      let statusColor = 'text-red-300';
+      if (percent >= 75) { status = "Safe"; statusColor = 'text-green-300'; } 
+      else if (percent >= 50) { status = "Warning"; statusColor = 'text-yellow-300';}
       
       statusText.textContent = status;
-      statusText.className = `text-3xl font-bold ${statusColor}`;
-      progressCircle.className = `progress-ring__circle ${statusColor}`;
-      
+      progressCircle.classList.add(statusColor);
       setTimeout(() => setProgress(percent), 100);
   }
 
   function displaySubjectAttendance(allLectures, attendedLectureIds) {
       const container = document.getElementById('subject-attendance-list');
+      if(allLectures.length === 0) {
+        container.innerHTML = `<tr><td class="p-4 text-center text-gray-500">No lecture data available.</td></tr>`;
+        return;
+      };
       container.innerHTML = '';
-      
       const subjectStats = allLectures.reduce((acc, lecture) => {
           const name = lecture.LECTURE;
           if (!acc[name]) acc[name] = { total: 0, attended: 0 };
           acc[name].total++;
-          if (attendedLectureIds.has(lecture.NO)) {
-              acc[name].attended++;
-          }
+          if (attendedLectureIds.has(lecture.NO)) acc[name].attended++;
           return acc;
       }, {});
 
@@ -253,15 +238,12 @@
           let color = percent >= 75 ? 'bg-green-500' : percent >= 50 ? 'bg-orange-500' : 'bg-red-500';
           
           container.innerHTML += `
-              <tr class="border-b last:border-b-0">
-                  <td class="p-4 font-medium text-gray-800">${subject}</td>
-                  <td class="p-4 text-gray-600 text-right">${stats.attended} / ${stats.total}</td>
-                  <td class="p-4 w-1/3">
-                      <div class="w-full bg-gray-200 rounded-full h-2.5">
-                          <div class="${color} h-2.5 rounded-full" style="width: ${percent}%"></div>
-                      </div>
+              <tr class="border-b border-gray-100 last:border-b-0">
+                  <td class="p-3 font-medium text-gray-800">${subject}</td>
+                  <td class="p-3 w-1/4">
+                      <div class="w-full bg-gray-200 rounded-full h-2"><div class="${color} h-2 rounded-full" style="width: ${percent}%"></div></div>
                   </td>
-                  <td class="p-4 font-bold text-gray-800 w-20 text-right">${percent}%</td>
+                  <td class="p-3 font-bold text-gray-700 w-16 text-right">${percent}%</td>
               </tr>
           `;
       });
@@ -274,36 +256,32 @@
           return;
       }
       container.innerHTML = '';
-      items.slice(0, 5).forEach(item => { // Show max 5 recent
+      items.slice(0, 5).forEach(item => {
           container.innerHTML += `
               <div class="flex items-center justify-between p-4 hover:bg-gray-50">
                 <div>
                   <p class="font-semibold text-gray-900">${type === 'lectures' ? item.LECTURE : item.EVENTS}</p>
                   <p class="text-sm text-gray-500">${item.DATE} at ${item.TIME}</p>
                 </div>
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Attended</span>
+                <lucide-icon name="check-circle-2" class="w-5 h-5 text-green-500"></lucide-icon>
               </div>
           `;
       });
   }
 
   // --- MAIN DATA LOADING FUNCTION ---
-  
   async function loadStudentProfile() {
     const { studentId, course } = getUrlParams();
     if (!studentId || !course) {
         document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
         return;
     }
-    
-    // Fetch all necessary data in parallel
     const [studentRes, lecturesRes, eventsRes] = await Promise.all([
         supabase.from(`${course}_students`).select('*').eq('id', studentId).single(),
         supabase.from(`${course}_lectures`).select('NO, LECTURE, DATE, TIME, attendees'),
         supabase.from(`${course}_events`).select('NO, EVENTS, DATE, TIME, attendees')
     ]);
 
-    // Handle Student Data
     if (studentRes.error || !studentRes.data) {
         console.error("Student not found:", studentRes.error);
         document.getElementById('profile-name').textContent = "Student Not Found";
@@ -311,10 +289,8 @@
     }
     const student = studentRes.data;
     displayProfileInfo(student);
-    // Assumes roles_tags is an array column in your students table
-    displayRolesAndTags(student.roles_tags);
+    displayRolesAndTags(student.roles_tags); // Assumes 'roles_tags' is an array column
 
-    // Handle Lectures Data
     const allLectures = lecturesRes.data || [];
     const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
     const attendedLectureIds = new Set(attendedLectures.map(l => l.NO));
@@ -323,29 +299,20 @@
     displaySubjectAttendance(allLectures, attendedLectureIds);
     renderItemList('recent-lectures-list', attendedLectures.sort((a,b) => b.NO - a.NO), 'lectures');
 
-    // Handle Activities/Events Data
     const allActivities = eventsRes.data || [];
     const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(studentId));
     renderItemList('recent-activities-list', attendedActivities.sort((a,b) => b.NO - a.NO), 'activities');
   }
 
   // --- INITIALIZATION ---
-  
   document.addEventListener('DOMContentLoaded', () => {
-    // Setup mentor profile in header
     const profName = getCookie("name");
     if (profName) {
       const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
       document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
       document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
     }
-    
-    // Logout Logic
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      // Clear cookies and redirect
-    });
-
+    document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
     loadStudentProfile();
   });
 </script>
