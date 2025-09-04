@@ -76,14 +76,11 @@
 
   </div>
 </div>
-
 <script>
   // Initialize Supabase client
-  const supabaseUrl = "hhttps://pwgdubtbvqnmivtupbvx.supabase.co"; // 🔹 Replace with your Supabase project URL
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg"; // 🔹 Replace with your Supabase anon key
-  const { createClient } = supabase;
-const client = createClient(supabaseUrl, supabaseKey);
-
+  const supabaseUrl = "https://pwgdubtbvqnmivtupbvx.supabase.co"; // 🔹 Replace
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg"; // 🔹 Replace
+  const client = supabase.createClient(supabaseUrl, supabaseKey);
 
   // Set cookie helper
   function setCookie(name, value, hours) {
@@ -100,7 +97,7 @@ const client = createClient(supabaseUrl, supabaseKey);
     const password = document.getElementById('password').value.trim();
 
     // Query Supabase for this admin
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('admins')
       .select('id, name, course, password')
       .eq('id', adminId)
