@@ -36,6 +36,14 @@
         <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Students</span>
       </a>
+      <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <lucide-icon name="book-open" class="h-5 w-5 mr-3"></lucide-icon>
+        <span>Lectures</span>
+      </a>
+      <a href="activities.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
+        <span>Activities</span>
+      </a>
       <a href="login.html" class="flex items-center px-4 py-3 mt-auto text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
         <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Logout</span>
@@ -300,8 +308,14 @@ function renderRecentLectures(lectures, students) {
 // ====== Init ======
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-
-  const course = getCookie("course") || "sybaf"; 
+  
+  // CHANGED: Redirect if no cookie is found
+  const course = getCookie("course"); 
+  if (!course) {
+      window.location.href = "adminlogin.html";
+      return; // Stop the script from running further
+  }
+  
   document.getElementById("dashboard-title").textContent = course.toUpperCase().replace('_', ' ') + " Mentor Dashboard";
 
   const studentsTable = `${course}_students`;
