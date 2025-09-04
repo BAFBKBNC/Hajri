@@ -117,31 +117,26 @@
         const password = document.getElementById('password').value;
 
         try {
-            // Call the secure database function 'login_admin'
             const { data, error } = await supabaseClient.rpc('login_admin', {
                 p_admin_id: adminId,
                 p_password: password
             });
 
             if (error) {
-                // This catches RPC-level errors
                 throw new Error("An error occurred during login. Please try again.");
             }
 
-            // The function returns user data on success, or null on failure
             if (data) {
-                // SUCCESS: User data was returned
                 alert('Login Successful! Redirecting...');
 
-                // Store details from the returned data in cookies for 1 hour
                 setCookie('id', data.id, 1);
                 setCookie('name', data.Name, 1);
-                setCookie('course', 'sybaf', 1);
+                // UPDATED: Use the course from the database
+                setCookie('course', data.course, 1); 
 
-                window.location.href = 'dashboard.html';
+                window.location.href = 'index.html';
 
             } else {
-                // FAILURE: The function returned null (invalid credentials)
                 throw new Error("Invalid ID or password.");
             }
 
