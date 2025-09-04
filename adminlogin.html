@@ -6,16 +6,11 @@
   <title>Login - ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    /* Style for disabled button */
-    button:disabled {
-        cursor: not-allowed;
-        background-color: #a5b4fc; /* Lighter indigo */
-    }
   </style>
 </head>
 <body class="bg-gray-100">
@@ -67,7 +62,7 @@
         </div>
         
         <div>
-          <button id="submit-button" type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+          <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
             Sign in
           </button>
         </div>
@@ -83,70 +78,50 @@
 </div>
 
 <script>
-    // Initialize Supabase Client
-    const supabaseUrl = "https://pwgdubtbvqnmivtupbvx.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
-    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+  // Initialize Supabase client
+  const supabaseUrl = "https://YOUR-PROJECT.supabase.co"; // 🔹 Replace with your Supabase project URL
+  const supabaseKey = "YOUR-ANON-KEY"; // 🔹 Replace with your Supabase anon key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    /**
-     * Sets a cookie with a name, value, and expiration time in hours.
-     * @param {string} name The name of the cookie.
-     * @param {string} value The value of the cookie.
-     * @param {number} hours The number of hours until the cookie expires.
-     */
-    function setCookie(name, value, hours) {
-        let expires = "";
-        if (hours) {
-            const date = new Date();
-            date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+  // Set cookie helper
+  function setCookie(name, value, hours) {
+    const d = new Date();
+    d.setTime(d.getTime() + (hours * 60 * 60 * 1000));
+    const expires = "expires=" + d.toUTCString();
+    document.cookie = `${name}=${value};${expires};path=/`;
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const adminId = document.getElementById('admin-id').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    // Query Supabase for this admin
+    const { data, error } = await supabase
+      .from('admins')
+      .select('id, name, course, password')
+      .eq('id', adminId)
+      .single();
+
+    if (error || !data) {
+      alert("❌ Invalid Admin ID");
+      return;
     }
 
-    const loginForm = document.getElementById('login-form');
-    const submitButton = document.getElementById('submit-button');
+    if (data.password !== password) {
+      alert("❌ Wrong password");
+      return;
+    }
 
-    loginForm.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        
-        submitButton.disabled = true;
-        submitButton.textContent = 'Signing in...';
+    // Store cookies (1 hour)
+    setCookie("id", data.id, 1);
+    setCookie("name", data.name, 1);
+    setCookie("course", data.course, 1);
 
-        const adminId = document.getElementById('admin-id').value;
-        const password = document.getElementById('password').value;
-
-        try {
-            const { data, error } = await supabaseClient.rpc('login_admin', {
-                p_admin_id: adminId,
-                p_password: password
-            });
-
-            if (error) {
-                throw new Error("An error occurred during login. Please try again.");
-            }
-
-            if (data) {
-                alert('Login Successful! Redirecting...');
-
-                setCookie('id', data.id, 1);
-                setCookie('name', data.Name, 1);
-                // UPDATED: Use the course from the database
-                setCookie('course', data.course, 1); 
-
-                window.location.href = 'index.html';
-
-            } else {
-                throw new Error("Invalid ID or password.");
-            }
-
-        } catch (error) {
-            alert(`Login Failed: ${error.message}`);
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Sign in';
-        }
-    });
+    alert("✅ Login successful! Redirecting...");
+    window.location.href = "index.html"; // redirect to dashboard
+  });
 </script>
 
 </body>
