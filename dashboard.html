@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       <td class="p-4 font-medium text-gray-900">${s.name}</td>
       <td class="p-4">${s.attendance}%</td>
       <td class="p-4"><span class="px-3 py-1 text-xs font-medium rounded-full ${badge}">${status}</span></td>
-      <td class="p-4"><a href="studentprofile.html.html?id=${s.id}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a></td>
+      <td class="p-4"><a href="studentprofile.html.html?id=${s.id}&course=${course}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a></td>
     </tr>`;
     tableBody.insertAdjacentHTML("beforeend", row);
   });
