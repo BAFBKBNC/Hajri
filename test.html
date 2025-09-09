@@ -3,23 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attendance Records - ClassCount</title>
+  <title>Student List | ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
     .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    /* Custom styles for date picker icon */
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-      opacity: 0.6;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator:hover {
-      opacity: 1;
-    }
+    .badge-safe { background-color: #dcfce7; color: #166534; }
+    .badge-warning { background-color: #fef9c3; color: #854d0e; }
+    .badge-danger { background-color: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -31,15 +27,11 @@
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
-      <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="index.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Dashboard</span>
       </a>
-      <a href="attendancerecords.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
-        <lucide-icon name="calendar-check" class="h-5 w-5 mr-3"></lucide-icon>
-        <span>Attendance</span>
-      </a>
-      <a href="dashboard.html#student-records-section" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="students.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
         <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Students</span>
       </a>
@@ -51,11 +43,11 @@
         <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Activities</span>
       </a>
-       <a href="changeadminpassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="changeadminpassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Change Password</span>
       </a>
-      <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-auto mb-4 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
+      <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
         <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Logout</span>
       </a>
@@ -64,7 +56,7 @@
 
   <div class="flex flex-col flex-1 overflow-y-auto">
     <header class="flex items-center justify-between h-20 px-4 sm:px-8 bg-white border-b shadow-sm sticky top-0 z-10">
-      <h1 id="page-title" class="text-xl sm:text-2xl font-bold text-gray-900">Attendance Records</h1>
+      <h1 id="page-title" class="text-xl sm:text-2xl font-bold text-gray-900">Student Records</h1>
       <div class="flex items-center space-x-4">
         <div class="text-sm text-gray-600 text-right">
           <p id="prof-name" class="font-semibold">Prof. ...</p>
@@ -80,32 +72,32 @@
       <div class="card p-6">
         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <h2 class="text-xl font-semibold flex items-center gap-2">
-            <lucide-icon name="history" class="h-6 w-6 text-indigo-600"></lucide-icon>
-            Lecture History
+            <lucide-icon name="list-checks" class="h-5 w-5 text-indigo-600"></lucide-icon>
+            All Students
           </h2>
-          <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
-            <input id="search-box" type="text" placeholder="Search by subject..." class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto">
-             <input type="date" id="date-filter" class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto">
-            <button id="reset-filters-btn" class="px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 flex items-center gap-2">
-                <lucide-icon name="rotate-ccw" class="h-4 w-4"></lucide-icon>
-                <span>Reset</span>
+          <div class="flex items-center gap-2">
+            <input id="search-box" type="text" placeholder="Search by name or ID"
+              class="px-3 py-2 border rounded-lg text-sm w-48 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button onclick="downloadExcel()"
+              class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors">
+              <lucide-icon name="download" class="h-4 w-4"></lucide-icon>
+              <span>Excel</span>
             </button>
           </div>
         </div>
-
         <div class="overflow-x-auto">
-          <table id="attendance-table" class="w-full text-left border-collapse">
+          <table id="student-table" class="w-full text-left border-collapse">
             <thead class="bg-gray-100">
               <tr>
-                <th class="p-4 cursor-pointer font-semibold text-gray-700" onclick="sortTable(0)">Date</th>
-                <th class="p-4 cursor-pointer font-semibold text-gray-700" onclick="sortTable(1)">Subject</th>
-                <th class="p-4 font-semibold text-gray-700 text-center">Attendees</th>
-                <th class="p-4 cursor-pointer font-semibold text-gray-700 text-right" onclick="sortTable(3)">Attendance %</th>
-                <th class="p-4 font-semibold text-gray-700">Actions</th>
+                <th class="p-4 cursor-pointer font-semibold text-gray-600" onclick="sortTable(0)">ID</th>
+                <th class="p-4 cursor-pointer font-semibold text-gray-600" onclick="sortTable(1)">Student Name</th>
+                <th class="p-4 cursor-pointer font-semibold text-gray-600" onclick="sortTable(2)">Overall Attendance</th>
+                <th class="p-4 font-semibold text-gray-600">Status</th>
+                <th class="p-4 font-semibold text-gray-600">Actions</th>
               </tr>
             </thead>
-            <tbody id="attendance-table-body">
-                <tr><td colspan="5" class="p-8 text-center text-gray-500">Loading records...</td></tr>
+            <tbody id="student-table-body">
+                <tr><td colspan="5" class="p-8 text-center text-gray-500">Loading student data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -117,13 +109,6 @@
 <script>
 const supabaseClient = window.supabase.createClient("https://pwgdubtbvqnmivtupbvx.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg");
 
-// --- Globals for data and state ---
-let allLectures = [];
-let totalStudents = 0;
-let sortDirection = {};
-const course = getCookie("course");
-
-// --- Utility Functions ---
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -131,101 +116,62 @@ function getCookie(name) {
   return null;
 }
 
-function parseDDMMYYYY(dateString) {
-  const [day, month, year] = dateString.split('/');
-  return new Date(year, month - 1, day);
+// ====== Excel Download ======
+function downloadExcel() {
+  let wb = XLSX.utils.book_new();
+  let ws_data = [["ID", "Student Name", "Attendance %", "Status"]];
+  document.querySelectorAll("#student-table-body tr").forEach(tr => {
+      // Ensure the row is visible (not filtered out by search)
+    if (tr.style.display !== 'none') {
+        let cols = tr.querySelectorAll("td");
+        ws_data.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
+    }
+  });
+  let ws = XLSX.utils.aoa_to_sheet(ws_data);
+  XLSX.utils.book_append_sheet(wb, ws, "Student Records");
+  XLSX.writeFile(wb, "student_records.xlsx");
 }
 
-// --- Table Sorting ---
+// ====== Search Filter ======
+document.getElementById("search-box").addEventListener("input", e => {
+  let filter = e.target.value.toLowerCase();
+  document.querySelectorAll("#student-table-body tr").forEach(tr => {
+    let text = tr.innerText.toLowerCase();
+    tr.style.display = text.includes(filter) ? "" : "none";
+  });
+});
+
+// ====== Sort Table ======
+let sortDirection = {};
 function sortTable(colIndex) {
-  const tbody = document.getElementById("attendance-table-body");
+  const tbody = document.getElementById("student-table-body");
   let rows = Array.from(tbody.querySelectorAll("tr"));
   
-  // Prevent sorting placeholder row
-  if (rows.length === 0 || rows[0].children.length < colIndex + 1) return;
-
+  // Toggle direction for the clicked column
   sortDirection[colIndex] = !sortDirection[colIndex];
-  
+
   rows.sort((a, b) => {
     let A = a.cells[colIndex].innerText;
     let B = b.cells[colIndex].innerText;
     
-    if (colIndex === 0) { // Date
-        return sortDirection[colIndex] 
-            ? parseDDMMYYYY(A) - parseDDMMYYYY(B) 
-            : parseDDMMYYYY(B) - parseDDMMYYYY(A);
-    }
-    if (colIndex === 3) { // Percentage
-        A = parseInt(A); B = parseInt(B);
+    // Handle numeric sorting for attendance column
+    if (colIndex === 2) { 
+        A = parseInt(A) || 0; 
+        B = parseInt(B) || 0;
     }
     
     if (A < B) return sortDirection[colIndex] ? -1 : 1;
     if (A > B) return sortDirection[colIndex] ? 1 : -1;
     return 0;
   });
-
-  tbody.innerHTML = "";
+  
+  // Re-append sorted rows
   rows.forEach(r => tbody.appendChild(r));
 }
 
-// --- Data Rendering ---
-function renderTable(lecturesToDisplay) {
-    const tableBody = document.getElementById("attendance-table-body");
-    tableBody.innerHTML = "";
 
-    if (lecturesToDisplay.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No records found matching your criteria.</td></tr>`;
-        return;
-    }
-
-    // Sort by most recent date by default
-    const sortedLectures = [...lecturesToDisplay].sort((a, b) => parseDDMMYYYY(b.DATE) - parseDDMMYYYY(a.DATE));
-
-    sortedLectures.forEach(lecture => {
-        const attendeesCount = lecture.attendees ? lecture.attendees.length : 0;
-        const percentage = totalStudents > 0 ? Math.round((attendeesCount / totalStudents) * 100) : 0;
-        
-        const row = `
-            <tr class="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
-                <td class="p-4 text-sm text-gray-700">${lecture.DATE}</td>
-                <td class="p-4 font-medium text-gray-900">${lecture.LECTURE}</td>
-                <td class="p-4 text-sm text-gray-700 font-medium text-center">${attendeesCount} / ${totalStudents}</td>
-                <td class="p-4 text-sm font-bold text-right text-indigo-600">${percentage}%</td>
-                <td class="p-4">
-                    <a href="lecturedetails.html?id=${lecture.id}&course=${course}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a>
-                </td>
-            </tr>`;
-        tableBody.insertAdjacentHTML("beforeend", row);
-    });
-}
-
-// --- Filtering Logic ---
-function applyFilters() {
-    const searchTerm = document.getElementById("search-box").value.toLowerCase();
-    const filterDate = document.getElementById("date-filter").value; // Format: YYYY-MM-DD
-    
-    let filteredData = allLectures;
-
-    if (searchTerm) {
-        filteredData = filteredData.filter(lecture => 
-            lecture.LECTURE.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    if (filterDate) {
-        // Convert YYYY-MM-DD to DD/MM/YYYY for comparison
-        const [year, month, day] = filterDate.split('-');
-        const formattedFilterDate = `${day}/${month}/${year}`;
-        
-        filteredData = filteredData.filter(lecture => lecture.DATE === formattedFilterDate);
-    }
-    
-    renderTable(filteredData);
-}
-
-// --- Page Initialization ---
+// ====== Page Initialization ======
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Basic UI Setup
   document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
 
   const profName = getCookie("name");
@@ -238,15 +184,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById('prof-initial').textContent = 'G';
   }
   
-  if (!course) {
-      window.location.href = "adminlogin.html";
-      return;
-  }
-  document.getElementById("page-title").textContent = course.toUpperCase().replace('_', ' ') + " Attendance";
-
-  // 2. Event Listeners Setup
   document.getElementById('logout-btn').addEventListener('click', (e) => {
     e.preventDefault();
+    
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i];
@@ -254,34 +194,57 @@ document.addEventListener("DOMContentLoaded", async () => {
         const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
         document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     }
+    
     window.location.href = "adminlogin.html";
   });
 
-  document.getElementById('search-box').addEventListener('input', applyFilters);
-  document.getElementById('date-filter').addEventListener('change', applyFilters);
-  document.getElementById('reset-filters-btn').addEventListener('click', () => {
-    document.getElementById('search-box').value = '';
-    document.getElementById('date-filter').value = '';
-    renderTable(allLectures);
-  });
-
-  // 3. Data Fetching and Rendering
-  const studentsTable = `${course}_students`;
-  const lecturesTable = `${course}_lectures`;
-
-  const { data: students, error: studentsError } = await supabaseClient.from(studentsTable).select("id");
-  const { data: lectures, error: lecturesError } = await supabaseClient.from(lecturesTable).select("id,DATE,LECTURE,attendees");
-
-  if (studentsError || lecturesError) {
-      console.error("Error fetching data:", studentsError || lecturesError);
-      document.getElementById("attendance-table-body").innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-600">Failed to load data. Please check the console.</td></tr>`;
+  const course = getCookie("course");
+  if (!course) {
+      window.location.href = "adminlogin.html";
       return;
   }
   
-  totalStudents = students ? students.length : 0;
-  allLectures = lectures || [];
-  
-  renderTable(allLectures);
+  document.getElementById("page-title").textContent = `${course.toUpperCase().replace('_', ' ')} Student Records`;
+
+  const studentsTable = `${course}_students`;
+  const lecturesTable = `${course}_lectures`;
+
+  const { data: students, error: studentsError } = await supabaseClient.from(studentsTable).select("id,name");
+  const { data: lectures, error: lecturesError } = await supabaseClient.from(lecturesTable).select("attendees");
+
+  if (studentsError || lecturesError || !students || !lectures) {
+      console.error("Error fetching data:", studentsError || lecturesError);
+      document.getElementById("student-table-body").innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-600">Failed to load data. Please try again.</td></tr>`;
+      return;
+  }
+
+  const enrichedStudents = students.map(s => {
+    const attendedCount = lectures.filter(l => l.attendees && l.attendees.includes(s.id.toString())).length;
+    const percentage = lectures.length ? Math.round((attendedCount / lectures.length) * 100) : 0;
+    return { ...s, attendance: percentage };
+  });
+
+  const tableBody = document.getElementById("student-table-body");
+  tableBody.innerHTML = ""; // Clear loading message
+
+  if (enrichedStudents.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No students found for this course.</td></tr>`;
+    return;
+  }
+
+  enrichedStudents.forEach(s => {
+    const status = s.attendance >= 75 ? "Safe" : s.attendance >= 50 ? "Warning" : "Danger";
+    const badgeClass = status === "Safe" ? "badge-safe" : status === "Warning" ? "badge-warning" : "badge-danger";
+    const rowHTML = `
+      <tr class="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
+        <td class="p-4 text-sm text-gray-700">${s.id}</td>
+        <td class="p-4 font-medium text-gray-900">${s.name}</td>
+        <td class="p-4 font-medium">${s.attendance}%</td>
+        <td class="p-4"><span class="px-3 py-1 text-xs font-medium rounded-full ${badgeClass}">${status}</span></td>
+        <td class="p-4"><a href="studentprofile.html?id=${s.id}&course=${course}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a></td>
+      </tr>`;
+    tableBody.insertAdjacentHTML("beforeend", rowHTML);
+  });
 });
 </script>
 </body>
