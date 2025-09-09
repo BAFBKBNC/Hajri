@@ -3,30 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student List | ClassCount</title>
+  <title>Lecture Attendance - ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    .badge-safe { background-color: #dcfce7; color: #166534; }
-    .badge-warning { background-color: #fef9c3; color: #854d0e; }
-    .badge-danger { background-color: #fee2e2; color: #991b1b; }
-    /* Custom style for the select dropdown */
-    select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-chevron-down'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.5rem center;
-        background-size: 1.2em;
-        padding-right: 2.5rem;
-    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -38,15 +23,15 @@
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
-      <a href="index.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Dashboard</span>
       </a>
-      <a href="students.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
+      <a href="students.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Students</span>
       </a>
-      <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
         <lucide-icon name="book-open" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Lectures</span>
       </a>
@@ -54,7 +39,7 @@
         <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Activities</span>
       </a>
-      <a href="changeadminpassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+       <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Change Password</span>
       </a>
@@ -67,11 +52,10 @@
 
   <div class="flex flex-col flex-1 overflow-y-auto">
     <header class="flex items-center justify-between h-20 px-4 sm:px-8 bg-white border-b shadow-sm sticky top-0 z-10">
-      <h1 id="page-title" class="text-xl sm:text-2xl font-bold text-gray-900">Student Records</h1>
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Lecture Attendance</h1>
       <div class="flex items-center space-x-4">
         <div class="text-sm text-gray-600 text-right">
           <p id="prof-name" class="font-semibold">Prof. ...</p>
-          <p id="current-date" class="text-xs"></p>
         </div>
         <div id="prof-initial" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold border-2 border-indigo-300">
           ?
@@ -80,236 +64,197 @@
     </header>
 
     <main class="p-4 sm:p-8">
-      <div class="card p-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h2 class="text-xl font-semibold flex items-center gap-2">
-            <lucide-icon name="list-checks" class="h-5 w-5 text-indigo-600"></lucide-icon>
-            All Students
-          </h2>
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-             <select id="subject-filter" class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white w-full sm:w-48">
-                <option value="All">All Subjects</option>
-            </select>
-            <input id="search-box" type="text" placeholder="Search by name or ID"
-              class="px-3 py-2 border rounded-lg text-sm w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <button onclick="downloadExcel()"
-              class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 transition-colors">
-              <lucide-icon name="download" class="h-4 w-4"></lucide-icon>
-              <span>Excel</span>
-            </button>
+      <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <div>
+            <h2 id="lecture-title" class="text-2xl font-bold text-indigo-600">Loading Lecture...</h2>
+            <p id="lecture-meta" class="text-gray-500 mt-1">Fetching details...</p>
           </div>
+          <button id="download-btn" class="mt-4 sm:mt-0 w-full sm:w-auto px-5 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+            <lucide-icon name="download" class="h-5 w-5"></lucide-icon>
+            <span>Download Attendance</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b">
+            <h3 id="attendee-count" class="text-xl font-semibold text-gray-800">Present Students (0)</h3>
         </div>
         <div class="overflow-x-auto">
-          <table id="student-table" class="w-full text-left border-collapse">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-4 cursor-pointer font-semibold text-gray-600" onclick="sortTable(0)">ID</th>
-                <th class="p-4 cursor-pointer font-semibold text-gray-600" onclick="sortTable(1)">Student Name</th>
-                <th id="attendance-header" class="p-4 cursor-pointer font-semibold text-gray-600" onclick="sortTable(2)">Overall Attendance</th>
-                <th class="p-4 font-semibold text-gray-600">Status</th>
-                <th class="p-4 font-semibold text-gray-600">Actions</th>
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="p-4 font-semibold text-gray-600 w-16">Sr. No.</th>
+                <th class="p-4 font-semibold text-gray-600">Student ID</th>
+                <th class="p-4 font-semibold text-gray-600">Student Name</th>
               </tr>
             </thead>
-            <tbody id="student-table-body">
-                <tr><td colspan="5" class="p-8 text-center text-gray-500">Loading student data...</td></tr>
-            </tbody>
+            <tbody id="attendee-list">
+              </tbody>
           </table>
         </div>
       </div>
+      
+      <a href="lectures.html" class="inline-block mt-6 px-5 py-2.5 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors">
+        ← Back to All Lectures
+      </a>
+
     </main>
   </div>
 </div>
 
-<script>
-const supabaseClient = window.supabase.createClient("https://pwgdubtbvqnmivtupbvx.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg");
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Globals to store fetched data and avoid re-fetching
-let allStudents = [];
-let allLectures = [];
+  const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+  // --- State ---
+  let presentStudents = [];
+  let lectureDetails = {};
 
-// ====== Excel Download ======
-function downloadExcel() {
-  const subjectFilter = document.getElementById("subject-filter");
-  const selectedSubject = subjectFilter.options[subjectFilter.selectedIndex].text;
-  const header = `Attendance % (${selectedSubject})`;
+  // --- DOM Elements ---
+  const listEl = document.getElementById("attendee-list");
+  const mainContent = document.querySelector("main");
+  const downloadBtn = document.getElementById("download-btn");
 
-  let wb = XLSX.utils.book_new();
-  let ws_data = [["ID", "Student Name", header, "Status"]];
-
-  document.querySelectorAll("#student-table-body tr").forEach(tr => {
-    if (tr.style.display !== 'none') {
-        let cols = tr.querySelectorAll("td");
-        ws_data.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
-    }
-  });
-  let ws = XLSX.utils.aoa_to_sheet(ws_data);
-  XLSX.utils.book_append_sheet(wb, ws, "Student Records");
-  XLSX.writeFile(wb, `student_records_${selectedSubject.replace(/\s+/g, '_')}.xlsx`);
-}
-
-// ====== Search Filter ======
-document.getElementById("search-box").addEventListener("input", e => {
-  let filter = e.target.value.toLowerCase();
-  document.querySelectorAll("#student-table-body tr").forEach(tr => {
-    let text = tr.innerText.toLowerCase();
-    tr.style.display = text.includes(filter) ? "" : "none";
-  });
-});
-
-// ====== Sort Table ======
-let sortDirection = {};
-function sortTable(colIndex) {
-  const tbody = document.getElementById("student-table-body");
-  let rows = Array.from(tbody.querySelectorAll("tr"));
+  // --- Helper Functions ---
+  function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      lectureNo: parseInt(params.get("no"), 10),
+      course: (params.get("course") || "").toLowerCase()
+    };
+  }
   
-  sortDirection[colIndex] = !sortDirection[colIndex];
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
 
-  rows.sort((a, b) => {
-    let A = a.cells[colIndex].innerText;
-    let B = b.cells[colIndex].innerText;
-    
-    if (colIndex === 2) { 
-        A = parseInt(A) || 0; 
-        B = parseInt(B) || 0;
+  // --- Core Functions ---
+  async function loadLectureDetails() {
+    const { lectureNo, course } = getUrlParams();
+    if (!lectureNo || !course) {
+      mainContent.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-md text-center text-red-600 font-semibold">Error: Course or lecture number not provided in URL.</div>`;
+      return;
+    }
+
+    const lecturesTable = `${course}_lectures`;
+    const studentsTable = `${course}_students`;
+
+    const { data: lecture, error: lectureErr } = await supabase.from(lecturesTable).select("*").eq("NO", lectureNo).single();
+    if (lectureErr || !lecture) {
+      mainContent.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-md text-center text-red-600 font-semibold">Error: Could not find the specified lecture.</div>`;
+      return;
     }
     
-    if (A < B) return sortDirection[colIndex] ? -1 : 1;
-    if (A > B) return sortDirection[colIndex] ? 1 : -1;
-    return 0;
-  });
-  
-  rows.forEach(r => tbody.appendChild(r));
-}
+    lectureDetails = { name: lecture.LECTURE, date: lecture.DATE, time: lecture.TIME };
+    document.getElementById("lecture-title").textContent = lectureDetails.name;
+    document.getElementById("lecture-meta").textContent = `${lectureDetails.date} | ${lectureDetails.time}`;
 
-// ====== NEW: Core function to render the student table based on subject filter ======
-function renderStudentTable(selectedSubject = 'All') {
-    const tableBody = document.getElementById("student-table-body");
-    tableBody.innerHTML = "";
-    
-    // Update table header based on filter
-    document.getElementById("attendance-header").textContent = selectedSubject === 'All' ? 'Overall Attendance' : `${selectedSubject} Attendance`;
-
-    // Filter lectures if a specific subject is selected
-    const relevantLectures = selectedSubject === 'All' 
-        ? allLectures 
-        : allLectures.filter(l => l.LECTURE === selectedSubject);
-    
-    const totalLecturesCount = relevantLectures.length;
-
-    if (allStudents.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No students found.</td></tr>`;
+    const presentIds = new Set(lecture.attendees || []);
+    if (presentIds.size === 0) {
+        renderAttendeeList([]);
         return;
     }
-    
-    if (totalLecturesCount === 0 && selectedSubject !== 'All') {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No lectures found for '${selectedSubject}'.</td></tr>`;
-        return;
+
+    // MODIFIED: Fetched student_id along with name and id
+    const { data: allStudents, error: stuErr } = await supabase.from(studentsTable).select("id, name, student_id").order("name");
+    if (stuErr) {
+      listEl.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error fetching student list.</td></tr>`;
+      return;
     }
-    
-    allStudents.forEach(student => {
-        // Count how many of the relevant lectures the student attended
-        const attendedCount = relevantLectures.filter(l => l.attendees && l.attendees.includes(student.id.toString())).length;
-        
-        const percentage = totalLecturesCount > 0 ? Math.round((attendedCount / totalLecturesCount) * 100) : 0;
 
-        const status = percentage >= 75 ? "Safe" : percentage >= 50 ? "Warning" : "Danger";
-        const badgeClass = status === "Safe" ? "badge-safe" : status === "Warning" ? "badge-warning" : "badge-danger";
-        
-        const rowHTML = `
-            <tr class="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
-                <td class="p-4 text-sm text-gray-700">${student.id}</td>
-                <td class="p-4 font-medium text-gray-900">${student.name}</td>
-                <td class="p-4 font-medium">${percentage}%</td>
-                <td class="p-4"><span class="px-3 py-1 text-xs font-medium rounded-full ${badgeClass}">${status}</span></td>
-                <td class="p-4"><a href="studentprofile.html?id=${student.id}&course=${getCookie('course')}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a></td>
-            </tr>`;
-        tableBody.insertAdjacentHTML("beforeend", rowHTML);
+    presentStudents = allStudents.filter(stu => presentIds.has(stu.id.toString()));
+    renderAttendeeList(presentStudents);
+  }
+
+  function renderAttendeeList(attendees) {
+    listEl.innerHTML = ""; // Clear list
+    document.getElementById('attendee-count').textContent = `Present Students (${attendees.length})`;
+
+    if (attendees.length === 0) {
+      // MODIFIED: Changed colspan to 3 to account for the new column
+      listEl.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500">No students were marked present for this lecture.</td></tr>`;
+      downloadBtn.disabled = true;
+      return;
+    }
+
+    attendees.forEach((student, index) => {
+      const row = document.createElement("tr");
+      row.className = "border-b last:border-0 hover:bg-gray-50";
+      // MODIFIED: Added a table cell for the student_id
+      row.innerHTML = `
+        <td class="p-4 text-gray-600">${index + 1}</td>
+        <td class="p-4 text-gray-700 font-mono">${student.student_id}</td>
+        <td class="p-4 font-medium text-gray-800">${student.name}</td>
+      `;
+      listEl.appendChild(row);
     });
-}
 
+    downloadBtn.disabled = false;
+  }
 
-// ====== NEW: Function to populate the subject filter dropdown ======
-function populateSubjectFilter(lectures) {
-    const subjectFilter = document.getElementById('subject-filter');
-    const subjects = [...new Set(lectures.map(l => l.LECTURE))].sort(); // Get unique, sorted subjects
-    
-    subjects.forEach(subject => {
-        const option = document.createElement('option');
-        option.value = subject;
-        option.textContent = subject;
-        subjectFilter.appendChild(option);
+  function downloadExcel() {
+    // MODIFIED: Added total attendees and updated headers
+    const dataForSheet = [
+        ["Lecture:", lectureDetails.name],
+        ["Date:", lectureDetails.date],
+        ["Time:", lectureDetails.time],
+        ["Total Attendees:", presentStudents.length],
+        [], // Blank row for spacing
+        ["Sr. No.", "Student ID", "Student Name"]
+    ];
+
+    // MODIFIED: Added student.student_id to each row
+    presentStudents.forEach((student, index) => {
+        dataForSheet.push([index + 1, student.student_id, student.name]);
     });
-}
 
+    const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
+    
+    // MODIFIED: Adjusted column widths for the three data columns
+    worksheet['!cols'] = [{ wch: 10 }, { wch: 20 }, { wch: 40 }];
 
-// ====== Page Initialization ======
-document.addEventListener("DOMContentLoaded", async () => {
-    // Basic page setup (date, prof name, etc.)
-    document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
 
+    // Sanitize filename
+    const filename = `${lectureDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance.xlsx`;
+    XLSX.writeFile(workbook, filename);
+  }
+
+  // --- Initial Load & Event Listeners ---
+  window.addEventListener("DOMContentLoaded", () => {
     const profName = getCookie("name");
     if (profName) {
-        const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
-        document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
-        document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
-    } else {
-        document.getElementById('prof-name').textContent = 'Prof. Guest';
-        document.getElementById('prof-initial').textContent = 'G';
+      const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
+      document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
+      document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
     }
-    
+
+    loadLectureDetails();
+    downloadBtn.addEventListener("click", downloadExcel);
+
+    // Logout Logic
     document.getElementById('logout-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i];
-            const eqPos = cookie.indexOf("=");
-            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-            document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-        }
-        window.location.href = "adminlogin.html";
+      e.preventDefault();
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
+      window.location.href = "adminlogin.html";
     });
-
-    const course = getCookie("course");
-    if (!course) {
-        window.location.href = "adminlogin.html";
-        return;
-    }
-    
-    document.getElementById("page-title").textContent = `${course.toUpperCase().replace('_', ' ')} Student Records`;
-
-    // Fetch all necessary data from Supabase
-    const studentsTable = `${course}_students`;
-    const lecturesTable = `${course}_lectures`;
-
-    const { data: students, error: studentsError } = await supabaseClient.from(studentsTable).select("id,name");
-    const { data: lectures, error: lecturesError } = await supabaseClient.from(lecturesTable).select("LECTURE,attendees");
-
-    if (studentsError || lecturesError) {
-        console.error("Error fetching data:", studentsError || lecturesError);
-        document.getElementById("student-table-body").innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-600">Failed to load data. Please try again.</td></tr>`;
-        return;
-    }
-
-    // Store data in global variables
-    allStudents = students || [];
-    allLectures = lectures || [];
-    
-    // NEW: Populate the filter and set up the event listener
-    populateSubjectFilter(allLectures);
-    document.getElementById('subject-filter').addEventListener('change', (e) => {
-        renderStudentTable(e.target.value);
-    });
-
-    // Initial render of the table with "All Subjects"
-    renderStudentTable('All');
-});
+  });
 </script>
+
 </body>
 </html>
