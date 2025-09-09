@@ -157,33 +157,27 @@
     document.getElementById("lecture-title").textContent = lectureDetails.name;
     document.getElementById("lecture-meta").textContent = `${lectureDetails.date} | ${lectureDetails.time}`;
 
-    const attendeesString = lecture.attendees;
-    // If the attendees string is empty or null, show an empty list
-    if (!attendeesString) {
+    // --- CORRECTED LOGIC ---
+    // The 'attendees' column is a text array, so Supabase gives us a JS array directly.
+    // We no longer need to split a string.
+    const presentStudentIds = lecture.attendees;
+
+    // If the attendees array is null or empty, show an empty list
+    if (!presentStudentIds || presentStudentIds.length === 0) {
         renderAttendeeList([]);
         return;
     }
 
-    // Split the comma-separated string into an array of IDs, trimming any whitespace
-    const presentStudentIds = attendeesString.split(',').map(id => id.trim());
-
-    if (presentStudentIds.length === 0) {
-        renderAttendeeList([]);
-        return;
-    }
-
-    // --- NEW LOGIC ---
-    // Fetch only the students whose ID is in our list.
-    // ⚠️ IMPORTANT: Confirm that 'student_id' is the correct column name for the Student ID in your students table.
+    // ⚠️ IMPORTANT: Confirm 'student_id' is the correct column name in your students table.
     const { data: studentsData, error: stuErr } = await supabase
         .from(studentsTable)
-        .select("name, student_id") // Select the columns you want to display
-        .in('student_id', presentStudentIds) // Use .in() to match IDs from the array
+        .select("name, student_id") 
+        .in('student_id', presentStudentIds)
         .order("name");
 
     if (stuErr) {
       listEl.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error fetching student list. Check column names.</td></tr>`;
-      console.error("Supabase Error:", stuErr); // Log the detailed error to the console
+      console.error("Supabase Error:", stuErr);
       return;
     }
 
@@ -204,7 +198,7 @@
     attendees.forEach((student, index) => {
       const row = document.createElement("tr");
       row.className = "border-b last:border-0 hover:bg-gray-50";
-      // ⚠️ IMPORTANT: Make sure 'student.student_id' matches the column name you selected.
+      // ⚠️ IMPORTANT: Make sure 'student.student_id' matches the column name.
       row.innerHTML = `
         <td class="p-4 text-gray-600">${index + 1}</td>
         <td class="p-4 text-gray-700 font-mono">${student.student_id}</td>
@@ -266,6 +260,5 @@
     });
   });
 </script>
-
 </body>
 </html>
