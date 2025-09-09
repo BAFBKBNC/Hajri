@@ -311,10 +311,11 @@
         
         showStatusMessage(container, 'Loading...');
 
+        // MODIFIED: Added .limit(5) to fetch only the 5 most recent records
         const { data, error } = await supabase
             .from(tableName)
             .select("*")
-            .order("NO", { ascending: false });
+            .order("NO", { ascending: false })
             .limit(5);
 
         if (error) {
