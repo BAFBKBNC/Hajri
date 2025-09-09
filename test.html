@@ -171,8 +171,8 @@
     // ⚠️ IMPORTANT: Confirm 'student_id' is the correct column name in your students table.
     const { data: studentsData, error: stuErr } = await supabase
         .from(studentsTable)
-        .select("name, student_id") 
-        .in('student_id', presentStudentIds)
+        .select("name, id") 
+        .in('id', presentStudentIds)
         .order("name");
 
     if (stuErr) {
