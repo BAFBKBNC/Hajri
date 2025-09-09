@@ -47,11 +47,33 @@
             z-index: 100;
             border-bottom: 1px solid var(--medium-gray);
             box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         header h1 {
             margin: 0;
             font-size: 1.75rem;
             font-weight: 700;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .logout-header-btn {
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .logout-header-btn:hover {
+            background-color: var(--light-gray);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
         }
         main {
             flex-grow: 1;
@@ -222,6 +244,7 @@
 <div class="app-container">
     <header>
         <h1>ClassCount</h1>
+        <a href="#" id="logout-btn" class="logout-header-btn">Logout</a>
     </header>
     <main>
         <div class="tab-buttons">
@@ -253,7 +276,6 @@
 </div>
 
 <script type="module">
-    // CORRECTED: Import Supabase as an ES Module
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
@@ -264,22 +286,20 @@
     const lecturesContainer = document.getElementById("lectures-container");
     const eventsContainer = document.getElementById("events-container");
     const tabButtons = document.querySelector(".tab-buttons");
+    const logoutBtn = document.getElementById('logout-btn');
+    const fabButton = document.getElementById('fab');
+    const fabOverlay = document.getElementById('fab-overlay');
     
     // --- Helper Functions ---
     function getCourse() {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; course=`);
         if (parts.length === 2) return parts.pop().split(';').shift();
-        return "sybaf"; // Default course
+        return null; // MODIFIED: Return null if no cookie is found
     }
-    
-    const course = getCourse();
 
-    // NEW: Reusable function to create cards, avoiding code duplication
-    function createCard(item, type) {
+    function createCard(item, type, course) { // MODIFIED: Added course param
         const isLecture = type === 'lecture';
-        
-        // Use the 'attendees' array for count, which is more robust
         const participantCount = Array.isArray(item.attendees) ? item.attendees.length : 0;
         
         const card = document.createElement("div");
@@ -298,20 +318,18 @@
         return card;
     }
     
-    // NEW: Function to show loading or status messages
     function showStatusMessage(container, message) {
         container.innerHTML = `<div class="status-message">${message}</div>`;
     }
 
     // --- Data Loading Functions ---
-    async function loadData(type) {
+    async function loadData(type, course) { // MODIFIED: Added course param
         const isLecture = type === 'lecture';
         const container = isLecture ? lecturesContainer : eventsContainer;
         const tableName = `${course}_${isLecture ? 'lectures' : 'events'}`;
         
         showStatusMessage(container, 'Loading...');
 
-        // MODIFIED: Added .limit(5) to fetch only the 5 most recent records
         const { data, error } = await supabase
             .from(tableName)
             .select("*")
@@ -324,7 +342,7 @@
             return;
         }
         
-        container.innerHTML = ""; // Clear the container
+        container.innerHTML = ""; 
         
         if (data.length === 0) {
             showStatusMessage(container, `No ${type}s found.`);
@@ -332,50 +350,82 @@
         }
         
         data.forEach(item => {
-            const card = createCard(item, type);
+            const card = createCard(item, type, course); // MODIFIED: Pass course
             container.appendChild(card);
         });
     }
 
     // --- Tab Switching Logic ---
-    function switchTab(tabName) {
+    function switchTab(tabName, course) { // MODIFIED: Added course param
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(tabName).classList.add('active');
         document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
 
-        // Load data for the activated tab
-        loadData(tabName === 'lectures' ? 'lecture' : 'event');
+        loadData(tabName === 'lectures' ? 'lecture' : 'event', course); // MODIFIED: Pass course
     }
 
-    tabButtons.addEventListener('click', (e) => {
-        const tabBtn = e.target.closest('.tab-btn');
-        if (tabBtn) {
-            switchTab(tabBtn.dataset.tab);
-        }
-    });
-
-    // --- Floating Action Button (FAB) Logic ---
-    const fabContainer = document.getElementById('fab-container');
-    const fabButton = document.getElementById('fab');
-    const fabOverlay = document.getElementById('fab-overlay');
-
+    // --- FAB Logic ---
     function toggleFabMenu() {
-        fabContainer.classList.toggle('active');
+        document.getElementById('fab-container').classList.toggle('active');
         fabOverlay.classList.toggle('active');
     }
 
-    fabButton.addEventListener('click', toggleFabMenu);
-    fabOverlay.addEventListener('click', toggleFabMenu);
+    // --- Logout Logic ---
+    function clearAllCookies() {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf("=");
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
+    }
 
-    // --- Initial Load ---
-    document.addEventListener('DOMContentLoaded', () => {
+    // --- NEW: App Initialization Function ---
+    function initializeApp(course) {
+        // Setup links
         document.getElementById("add-lecture").href = `add.html?course=${course}`;
         document.getElementById("add-event").href = `addEvent.html?course=${course}`;
         
-        // Load data for the default active tab
-        loadData('lecture');
+        // Setup Event Listeners
+        tabButtons.addEventListener('click', (e) => {
+            const tabBtn = e.target.closest('.tab-btn');
+            if (tabBtn) {
+                switchTab(tabBtn.dataset.tab, course);
+            }
+        });
+
+        fabButton.addEventListener('click', toggleFabMenu);
+        fabOverlay.addEventListener('click', toggleFabMenu);
+        
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearAllCookies();
+            window.location.href = 'login.html';
+        });
+
+        // Load initial data
+        loadData('lecture', course);
+    }
+
+    // --- Initial Load & Authentication Check ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const course = getCourse();
+
+        if (!course) {
+            // No cookie found, user is not authenticated
+            console.error("Course cookie not found. Redirecting to login.");
+            document.body.innerHTML = `<div class="status-message" style="margin: 2rem;">Authentication required. Redirecting to login page...</div>`;
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2500);
+            return; // Stop execution
+        }
+
+        // Cookie found, proceed to initialize the app
+        initializeApp(course);
     });
 </script>
 
