@@ -3,19 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Profile - ClassCount</title>
+  <title>Attendance Records - ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
+    .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    .profile-header-card { background: linear-gradient(135deg, #4f46e5, #6366f1); }
-    .progress-ring__circle {
-      transition: stroke-dashoffset 0.6s ease-out;
-      transform: rotate(-90deg);
-      transform-origin: 50% 50%;
+    /* Custom styles for date picker icon */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
     }
   </style>
 </head>
@@ -28,11 +31,15 @@
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
-      <a href="index.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Dashboard</span>
       </a>
-      <a href="index.html#student-records-section" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
+      <a href="attendancerecords.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
+        <lucide-icon name="calendar-check" class="h-5 w-5 mr-3"></lucide-icon>
+        <span>Attendance</span>
+      </a>
+      <a href="dashboard.html#student-records-section" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Students</span>
       </a>
@@ -44,11 +51,11 @@
         <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Activities</span>
       </a>
-      <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+       <a href="changeadminpassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Change Password</span>
       </a>
-      <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
+      <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-auto mb-4 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
         <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Logout</span>
       </a>
@@ -57,285 +64,225 @@
 
   <div class="flex flex-col flex-1 overflow-y-auto">
     <header class="flex items-center justify-between h-20 px-4 sm:px-8 bg-white border-b shadow-sm sticky top-0 z-10">
-      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Student Profile</h1>
+      <h1 id="page-title" class="text-xl sm:text-2xl font-bold text-gray-900">Attendance Records</h1>
       <div class="flex items-center space-x-4">
         <div class="text-sm text-gray-600 text-right">
           <p id="prof-name" class="font-semibold">Prof. ...</p>
+          <p id="current-date" class="text-xs"></p>
         </div>
-        <div id="prof-initial" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold border-2 border-indigo-300">?</div>
+        <div id="prof-initial" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold border-2 border-indigo-300">
+          ?
+        </div>
       </div>
     </header>
 
     <main class="p-4 sm:p-8">
-        <div class="profile-header-card text-white p-6 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div class="flex items-center gap-6">
-                <div id="profile-initial-main" class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 text-white flex-shrink-0 flex items-center justify-center text-5xl font-bold border-4 border-white/50">
-                    ?
-                </div>
-                <div>
-                    <h2 id="profile-name" class="text-3xl font-bold">Loading...</h2>
-                    <p id="profile-course-year" class="text-indigo-200 font-medium mt-1"></p>
-                    <p class="text-sm text-indigo-200 mt-2">Mentor: <span id="profile-mentor" class="font-semibold"></span></p>
-                </div>
-            </div>
-            <div class="flex items-center gap-4 text-center">
-                <div class="relative w-28 h-28">
-                    <svg class="w-full h-full" viewBox="0 0 100 100">
-                        <circle class="text-white/20" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                        <circle id="progress-circle" class="progress-ring__circle text-white" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                    </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span id="attendancePercent" class="text-2xl font-bold">--%</span>
-                    </div>
-                </div>
-                <div>
-                    <p class="text-lg font-semibold">Overall Attendance</p>
-                    <p id="attendanceStatusText" class="font-bold text-xl mt-1">--</p>
-                </div>
-            </div>
+      <div class="card p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <h2 class="text-xl font-semibold flex items-center gap-2">
+            <lucide-icon name="history" class="h-6 w-6 text-indigo-600"></lucide-icon>
+            Lecture History
+          </h2>
+          <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+            <input id="search-box" type="text" placeholder="Search by subject..." class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto">
+             <input type="date" id="date-filter" class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto">
+            <button id="reset-filters-btn" class="px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 flex items-center gap-2">
+                <lucide-icon name="rotate-ccw" class="h-4 w-4"></lucide-icon>
+                <span>Reset</span>
+            </button>
+          </div>
         </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <div class="lg:col-span-2 space-y-8">
-          
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="tags" class="w-5 h-5 text-indigo-500"></lucide-icon>Roles & Tags</h3>
-            <div id="roles-tags-list" class="flex flex-wrap gap-2">
-              <p class="text-sm text-gray-500">No roles or tags assigned.</p>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="book-open-check" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
-             <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="award" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
-             <div id="recent-activities-list" class="divide-y divide-gray-100"></div>
-          </div>
-
-           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="clipboard-list" class="w-5 h-5 text-indigo-500"></lucide-icon>Field Project Details</h3>
-             <div id="field-project-details" class="space-y-3">
-                 <div class="text-center text-gray-500 py-8">
-                    <p class="font-medium">Project details not yet updated.</p>
-                </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="lg:col-span-1 space-y-8">
-
-          <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="pie-chart" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
-             <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
-          </div>
-          
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="bar-chart-3" class="w-5 h-5 text-indigo-500"></lucide-icon>Weekly Test Insights</h3>
-            <div class="text-center text-gray-500 py-8">
-              <p class="font-medium">No insights available currently.</p>
-            </div>
-          </div>
-
+        <div class="overflow-x-auto">
+          <table id="attendance-table" class="w-full text-left border-collapse">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-4 cursor-pointer font-semibold text-gray-700" onclick="sortTable(0)">Date</th>
+                <th class="p-4 cursor-pointer font-semibold text-gray-700" onclick="sortTable(1)">Subject</th>
+                <th class="p-4 font-semibold text-gray-700 text-center">Attendees</th>
+                <th class="p-4 cursor-pointer font-semibold text-gray-700 text-right" onclick="sortTable(3)">Attendance %</th>
+                <th class="p-4 font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-table-body">
+                <tr><td colspan="5" class="p-8 text-center text-gray-500">Loading records...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </main>
   </div>
 </div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script>
+const supabaseClient = window.supabase.createClient("https://pwgdubtbvqnmivtupbvx.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg");
 
-  const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// --- Globals for data and state ---
+let allLectures = [];
+let totalStudents = 0;
+let sortDirection = {};
+const course = getCookie("course");
 
-  // --- HELPER FUNCTIONS ---
-  function getUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    return { studentId: params.get("id"), course: params.get("course") };
-  }
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  }
-  function setProgress(percent) {
-    const circle = document.getElementById('progress-circle');
-    if (!circle) return;
-    const radius = circle.r.baseVal.value;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percent / 100) * circumference;
-    circle.style.strokeDasharray = `${circumference} ${circumference}`;
-    circle.style.strokeDashoffset = offset;
-  }
+// --- Utility Functions ---
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+}
 
-  // NEW: Function to get full course name from course code
-  function getFullCourseName(courseCode = '') {
-      const code = courseCode.toLowerCase();
-      const courseMap = {
-          'fyba': 'FY BA', 'fybcom': 'FY BCOM', 'fybsc': 'FY BSC', 'fybms': 'FY BCOM (Management Studies)', 'fybaf': 'FY BCOM (Accounting & Finance)', 'fybfm': 'FY BCOM (Financial Markets)', 'fybsccs': 'FY BSC (Computer Science)',
-          'syba': 'SY BA', 'sybcom': 'SY BCOM', 'sybsc': 'SY BSC', 'sybms': 'SY BCOM (Management Studies)', 'sybaf': 'SY BCOM (Accounting & Finance)', 'sybfm': 'SY BCOM (Financial Markets)', 'sybsccs': 'SY BSC (Computer Science)',
-          'tyba': 'TY BA', 'tybcom': 'TY BCOM', 'tybsc': 'TY BSC', 'tybms': 'TY BCOM (Management Studies)', 'tybaf': 'TY BCOM (Accounting & Finance)', 'tybfm': 'TY BCOM (Financial Markets)', 'tybsccs': 'TY BSC (Computer Science)'
-      };
-      return courseMap[code] || code.toUpperCase(); // Fallback to uppercase code
-  }
+function parseDDMMYYYY(dateString) {
+  const [day, month, year] = dateString.split('/');
+  return new Date(year, month - 1, day);
+}
+
+// --- Table Sorting ---
+function sortTable(colIndex) {
+  const tbody = document.getElementById("attendance-table-body");
+  let rows = Array.from(tbody.querySelectorAll("tr"));
   
-  // --- UI UPDATE FUNCTIONS ---
+  // Prevent sorting placeholder row
+  if (rows.length === 0 || rows[0].children.length < colIndex + 1) return;
+
+  sortDirection[colIndex] = !sortDirection[colIndex];
   
-  function displayProfileInfo(student, courseCode) {
-      const studentName = student.name || 'N/A';
-      document.getElementById('profile-initial-main').textContent = studentName.charAt(0).toUpperCase();
-      document.getElementById('profile-name').textContent = studentName;
-
-      // NEW: Derive year and full course name from the URL course code
-      const year = courseCode.substring(0, 2).toUpperCase();
-      const fullCourseName = getFullCourseName(courseCode);
-      document.getElementById('profile-course-year').textContent = `${fullCourseName} - ${year}`;
-      
-      document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
-  }
-
-  // UPDATED: Handles 'roles' column and checks for "No Tags"
-  function displayRolesAndTags(tags) {
-      const container = document.getElementById('roles-tags-list');
-      if (!tags || tags.length === 0 || (tags.length === 1 && tags[0] === 'No Tags')) {
-          container.innerHTML = `<p class="text-sm text-gray-500">No roles or tags assigned.</p>`;
-          return;
-      }
-      
-      container.innerHTML = '';
-      tags.forEach(tag => {
-          let colorClasses = 'bg-gray-100 text-gray-800';
-          if (['NCC', 'NSS', 'Sports'].includes(tag)) colorClasses = 'bg-blue-100 text-blue-800';
-          if (['Good Conduct'].includes(tag)) colorClasses = 'bg-green-100 text-green-800';
-          if (['Misbehavior', 'Medically Unstable'].includes(tag)) colorClasses = 'bg-red-100 text-red-800';
-          if (['Class Representative'].includes(tag)) colorClasses = 'bg-indigo-100 text-indigo-800';
-          
-          container.innerHTML += `<span class="px-3 py-1 text-sm font-semibold rounded-full ${colorClasses}">${tag}</span>`;
-      });
-  }
-
-  function displayOverallAttendance(attendedCount, totalCount) {
-      const percent = totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
-      document.getElementById('attendancePercent').textContent = `${percent}%`;
-      const statusText = document.getElementById('attendanceStatusText');
-      const progressCircle = document.getElementById('progress-circle');
-      
-      let status = "Danger";
-      let statusColor = 'text-red-300';
-      if (percent >= 75) { status = "Safe"; statusColor = 'text-green-300'; } 
-      else if (percent >= 50) { status = "Warning"; statusColor = 'text-yellow-300';}
-      
-      statusText.textContent = status;
-      progressCircle.classList.add(statusColor);
-      setTimeout(() => setProgress(percent), 100);
-  }
-
-  function displaySubjectAttendance(allLectures, attendedLectureIds) {
-      const container = document.getElementById('subject-attendance-list');
-      if(allLectures.length === 0) {
-        container.innerHTML = `<tr><td class="p-4 text-center text-gray-500">No lecture data available.</td></tr>`;
-        return;
-      };
-      container.innerHTML = '';
-      const subjectStats = allLectures.reduce((acc, lecture) => {
-          const name = lecture.LECTURE;
-          if (!acc[name]) acc[name] = { total: 0, attended: 0 };
-          acc[name].total++;
-          if (attendedLectureIds.has(lecture.NO)) acc[name].attended++;
-          return acc;
-      }, {});
-
-      Object.entries(subjectStats).forEach(([subject, stats]) => {
-          const percent = stats.total > 0 ? Math.round((stats.attended / stats.total) * 100) : 0;
-          let color = percent >= 75 ? 'bg-green-500' : percent >= 50 ? 'bg-orange-500' : 'bg-red-500';
-          
-          container.innerHTML += `
-              <tr class="border-b border-gray-100 last:border-b-0">
-                  <td class="p-3 font-medium text-gray-800">${subject}</td>
-                  <td class="p-3 w-1/4">
-                      <div class="w-full bg-gray-200 rounded-full h-2"><div class="${color} h-2 rounded-full" style="width: ${percent}%"></div></div>
-                  </td>
-                  <td class="p-3 font-bold text-gray-700 w-16 text-right">${percent}%</td>
-              </tr>
-          `;
-      });
-  }
-  
-  function renderItemList(containerId, items, type) {
-      const container = document.getElementById(containerId);
-      if (!items || items.length === 0) {
-          container.innerHTML = `<p class="p-6 text-center text-gray-500">No recent ${type} found.</p>`;
-          return;
-      }
-      container.innerHTML = '';
-      items.slice(0, 5).forEach(item => {
-          container.innerHTML += `
-              <div class="flex items-center justify-between p-4 hover:bg-gray-50">
-                <div>
-                  <p class="font-semibold text-gray-900">${type === 'lectures' ? item.LECTURE : item.EVENTS}</p>
-                  <p class="text-sm text-gray-500">${item.DATE} at ${item.TIME}</p>
-                </div>
-                <lucide-icon name="check-circle-2" class="w-5 h-5 text-green-500"></lucide-icon>
-              </div>
-          `;
-      });
-  }
-
-  // --- MAIN DATA LOADING FUNCTION ---
-  async function loadStudentProfile() {
-    const { studentId, course } = getUrlParams();
-    if (!studentId || !course) {
-        document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
-        return;
-    }
-    // UPDATED: Fetching the 'roles' column specifically
-    const [studentRes, lecturesRes, eventsRes] = await Promise.all([
-        supabase.from(`${course}_students`).select('*, roles').eq('id', studentId).single(),
-        supabase.from(`${course}_lectures`).select('NO, LECTURE, DATE, TIME, attendees'),
-        supabase.from(`${course}_events`).select('NO, EVENTS, DATE, TIME, attendees')
-    ]);
-
-    if (studentRes.error || !studentRes.data) {
-        console.error("Student not found:", studentRes.error);
-        document.getElementById('profile-name').textContent = "Student Not Found";
-        return;
-    }
-    const student = studentRes.data;
-    displayProfileInfo(student, course); // Pass course code for processing
-    displayRolesAndTags(student.roles); // Pass student.roles from the DB
-
-    const allLectures = lecturesRes.data || [];
-    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
-    const attendedLectureIds = new Set(attendedLectures.map(l => l.NO));
+  rows.sort((a, b) => {
+    let A = a.cells[colIndex].innerText;
+    let B = b.cells[colIndex].innerText;
     
-    displayOverallAttendance(attendedLectures.length, allLectures.length);
-    displaySubjectAttendance(allLectures, attendedLectureIds);
-    renderItemList('recent-lectures-list', attendedLectures.sort((a,b) => b.NO - a.NO), 'lectures');
+    if (colIndex === 0) { // Date
+        return sortDirection[colIndex] 
+            ? parseDDMMYYYY(A) - parseDDMMYYYY(B) 
+            : parseDDMMYYYY(B) - parseDDMMYYYY(A);
+    }
+    if (colIndex === 3) { // Percentage
+        A = parseInt(A); B = parseInt(B);
+    }
+    
+    if (A < B) return sortDirection[colIndex] ? -1 : 1;
+    if (A > B) return sortDirection[colIndex] ? 1 : -1;
+    return 0;
+  });
 
-    const allActivities = eventsRes.data || [];
-    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(studentId));
-    renderItemList('recent-activities-list', attendedActivities.sort((a,b) => b.NO - a.NO), 'activities');
-  }
+  tbody.innerHTML = "";
+  rows.forEach(r => tbody.appendChild(r));
+}
 
-  // --- INITIALIZATION ---
-  document.addEventListener('DOMContentLoaded', () => {
-    const profName = getCookie("name");
-    if (profName) {
+// --- Data Rendering ---
+function renderTable(lecturesToDisplay) {
+    const tableBody = document.getElementById("attendance-table-body");
+    tableBody.innerHTML = "";
+
+    if (lecturesToDisplay.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No records found matching your criteria.</td></tr>`;
+        return;
+    }
+
+    // Sort by most recent date by default
+    const sortedLectures = [...lecturesToDisplay].sort((a, b) => parseDDMMYYYY(b.DATE) - parseDDMMYYYY(a.DATE));
+
+    sortedLectures.forEach(lecture => {
+        const attendeesCount = lecture.attendees ? lecture.attendees.length : 0;
+        const percentage = totalStudents > 0 ? Math.round((attendeesCount / totalStudents) * 100) : 0;
+        
+        const row = `
+            <tr class="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
+                <td class="p-4 text-sm text-gray-700">${lecture.DATE}</td>
+                <td class="p-4 font-medium text-gray-900">${lecture.LECTURE}</td>
+                <td class="p-4 text-sm text-gray-700 font-medium text-center">${attendeesCount} / ${totalStudents}</td>
+                <td class="p-4 text-sm font-bold text-right text-indigo-600">${percentage}%</td>
+                <td class="p-4">
+                    <a href="lecturedetails.html?id=${lecture.id}&course=${course}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a>
+                </td>
+            </tr>`;
+        tableBody.insertAdjacentHTML("beforeend", row);
+    });
+}
+
+// --- Filtering Logic ---
+function applyFilters() {
+    const searchTerm = document.getElementById("search-box").value.toLowerCase();
+    const filterDate = document.getElementById("date-filter").value; // Format: YYYY-MM-DD
+    
+    let filteredData = allLectures;
+
+    if (searchTerm) {
+        filteredData = filteredData.filter(lecture => 
+            lecture.LECTURE.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (filterDate) {
+        // Convert YYYY-MM-DD to DD/MM/YYYY for comparison
+        const [year, month, day] = filterDate.split('-');
+        const formattedFilterDate = `${day}/${month}/${year}`;
+        
+        filteredData = filteredData.filter(lecture => lecture.DATE === formattedFilterDate);
+    }
+    
+    renderTable(filteredData);
+}
+
+// --- Page Initialization ---
+document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Basic UI Setup
+  document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+  const profName = getCookie("name");
+  if (profName) {
       const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
       document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
       document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
-    }
-    document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
-    loadStudentProfile();
-  });
-</script>
+  } else {
+      document.getElementById('prof-name').textContent = 'Prof. Guest';
+      document.getElementById('prof-initial').textContent = 'G';
+  }
+  
+  if (!course) {
+      window.location.href = "adminlogin.html";
+      return;
+  }
+  document.getElementById("page-title").textContent = course.toUpperCase().replace('_', ' ') + " Attendance";
 
+  // 2. Event Listeners Setup
+  document.getElementById('logout-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    }
+    window.location.href = "adminlogin.html";
+  });
+
+  document.getElementById('search-box').addEventListener('input', applyFilters);
+  document.getElementById('date-filter').addEventListener('change', applyFilters);
+  document.getElementById('reset-filters-btn').addEventListener('click', () => {
+    document.getElementById('search-box').value = '';
+    document.getElementById('date-filter').value = '';
+    renderTable(allLectures);
+  });
+
+  // 3. Data Fetching and Rendering
+  const studentsTable = `${course}_students`;
+  const lecturesTable = `${course}_lectures`;
+
+  const { data: students, error: studentsError } = await supabaseClient.from(studentsTable).select("id");
+  const { data: lectures, error: lecturesError } = await supabaseClient.from(lecturesTable).select("id,DATE,LECTURE,attendees");
+
+  if (studentsError || lecturesError) {
+      console.error("Error fetching data:", studentsError || lecturesError);
+      document.getElementById("attendance-table-body").innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-600">Failed to load data. Please check the console.</td></tr>`;
+      return;
+  }
+  
+  totalStudents = students ? students.length : 0;
+  allLectures = lectures || [];
+  
+  renderTable(allLectures);
+});
+</script>
 </body>
 </html>
