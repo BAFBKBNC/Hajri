@@ -39,7 +39,7 @@
         <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Activities</span>
       </a>
-       <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
         <span>Change Password</span>
       </a>
@@ -84,19 +84,19 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left">
             <thead>
-              <tr class="bg-gray-50">
-                <th class="p-4 font-semibold text-gray-600 w-16">Sr. No.</th>
-                <th class="p-4 font-semibold text-gray-600">Student ID</th>
-                <th class="p-4 font-semibold text-gray-600">Student Name</th>
-              </tr>
-            </thead>
+  <tr class="bg-gray-50">
+    <th class="p-4 font-semibold text-gray-600 w-16">Sr. No.</th>
+    <th class="p-4 font-semibold text-gray-600">Student ID</th>
+    <th class="p-4 font-semibold text-gray-600">Student Name</th>
+  </tr>
+</thead>
             <tbody id="attendee-list">
               </tbody>
           </table>
         </div>
       </div>
       
-      <a href="lectures.html" class="inline-block mt-6 px-5 py-2.5 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors">
+       <a href="lectures.html" class="inline-block mt-6 px-5 py-2.5 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors">
         ← Back to All Lectures
       </a>
 
@@ -108,7 +108,7 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // --- State ---
@@ -147,7 +147,7 @@
     const lecturesTable = `${course}_lectures`;
     const studentsTable = `${course}_students`;
 
-    const { data: lecture, error: lectureErr } = await supabase.from(lecturesTable).select("LECTURE, DATE, TIME, attendees").eq("NO", lectureNo).single();
+    const { data: lecture, error: lectureErr } = await supabase.from(lecturesTable).select("*").eq("NO", lectureNo).single();
     if (lectureErr || !lecture) {
       mainContent.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-md text-center text-red-600 font-semibold">Error: Could not find the specified lecture.</div>`;
       return;
@@ -157,40 +157,28 @@
     document.getElementById("lecture-title").textContent = lectureDetails.name;
     document.getElementById("lecture-meta").textContent = `${lectureDetails.date} | ${lectureDetails.time}`;
 
-    // --- CORRECTED LOGIC ---
-    // The 'attendees' column is a text array, so Supabase gives us a JS array directly.
-    // We no longer need to split a string.
-    const presentStudentIds = lecture.attendees;
-
-    // If the attendees array is null or empty, show an empty list
-    if (!presentStudentIds || presentStudentIds.length === 0) {
+    const presentIds = new Set(lecture.attendees || []);
+    if (presentIds.size === 0) {
         renderAttendeeList([]);
         return;
     }
 
-    // ⚠️ IMPORTANT: Confirm 'student_id' is the correct column name in your students table.
-    const { data: studentsData, error: stuErr } = await supabase
-        .from(studentsTable)
-        .select("name, id") 
-        .in('id', presentStudentIds)
-        .order("name");
-
+    const { data: allStudents, error: stuErr } = await supabase.from(studentsTable).select("id, name").order("name");
     if (stuErr) {
-      listEl.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error fetching student list. Check column names.</td></tr>`;
-      console.error("Supabase Error:", stuErr);
+      listEl.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-red-500">Error fetching student list.</td></tr>`;
       return;
     }
 
-    presentStudents = studentsData;
+    presentStudents = allStudents.filter(stu => presentIds.has(stu.id.toString()));
     renderAttendeeList(presentStudents);
   }
 
   function renderAttendeeList(attendees) {
-    listEl.innerHTML = "";
+    listEl.innerHTML = ""; // Clear list
     document.getElementById('attendee-count').textContent = `Present Students (${attendees.length})`;
 
     if (attendees.length === 0) {
-      listEl.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500">No students were marked present for this lecture.</td></tr>`;
+      listEl.innerHTML = `<tr><td colspan="2" class="p-6 text-center text-gray-500">No students were marked present for this lecture.</td></tr>`;
       downloadBtn.disabled = true;
       return;
     }
@@ -198,12 +186,12 @@
     attendees.forEach((student, index) => {
       const row = document.createElement("tr");
       row.className = "border-b last:border-0 hover:bg-gray-50";
-      // ⚠️ IMPORTANT: Make sure 'student.student_id' matches the column name.
       row.innerHTML = `
-        <td class="p-4 text-gray-600">${index + 1}</td>
-        <td class="p-4 text-gray-700 font-mono">${student.student_id}</td>
-        <td class="p-4 font-medium text-gray-800">${student.name}</td>
-      `;
+  <td class="p-4 text-gray-600">${index + 1}</td>
+  <td class="p-4 text-gray-600">${student.id}</td>
+  <td class="p-4 font-medium text-gray-800">${student.name}</td>
+`;
+
       listEl.appendChild(row);
     });
 
@@ -211,29 +199,30 @@
   }
 
   function downloadExcel() {
-    const dataForSheet = [
-        ["Lecture:", lectureDetails.name],
-        ["Date:", lectureDetails.date],
-        ["Time:", lectureDetails.time],
-        ["Total Attendees:", presentStudents.length],
-        [], // Blank row
-        ["Sr. No.", "Student ID", "Student Name"]
-    ];
+  const dataForSheet = [
+      ["Lecture:", lectureDetails.name],
+      ["Date:", lectureDetails.date],
+      ["Time:", lectureDetails.time],
+      ["Total Attendees:", presentStudents.length], // ✅ total attendees
+      [], // Blank row
+      ["Sr. No.", "Student ID", "Student Name"]
+  ];
 
-    presentStudents.forEach((student, index) => {
-        // ⚠️ IMPORTANT: Make sure 'student.student_id' matches the column name.
-        dataForSheet.push([index + 1, student.student_id, student.name]);
-    });
+  presentStudents.forEach((student, index) => {
+      dataForSheet.push([index + 1, student.id, student.name]);
+  });
 
-    const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
-    worksheet['!cols'] = [{ wch: 10 }, { wch: 20 }, { wch: 40 }];
+  const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+  // Set column widths
+  worksheet['!cols'] = [{ wch: 10 }, { wch: 15 }, { wch: 40 }];
 
-    const filename = `${lectureDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance.xlsx`;
-    XLSX.writeFile(workbook, filename);
-  }
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+  const filename = `${lectureDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance.xlsx`;
+  XLSX.writeFile(workbook, filename);
+}
 
   // --- Initial Load & Event Listeners ---
   window.addEventListener("DOMContentLoaded", () => {
@@ -247,6 +236,7 @@
     loadLectureDetails();
     downloadBtn.addEventListener("click", downloadExcel);
 
+    // Logout Logic
     document.getElementById('logout-btn').addEventListener('click', (e) => {
       e.preventDefault();
       const cookies = document.cookie.split(";");
@@ -260,5 +250,6 @@
     });
   });
 </script>
+
 </body>
 </html>
