@@ -84,11 +84,12 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left">
             <thead>
-              <tr class="bg-gray-50">
-                <th class="p-4 font-semibold text-gray-600 w-16">Sr. No.</th>
-                <th class="p-4 font-semibold text-gray-600">Student Name</th>
-              </tr>
-            </thead>
+  <tr class="bg-gray-50">
+    <th class="p-4 font-semibold text-gray-600 w-16">Sr. No.</th>
+    <th class="p-4 font-semibold text-gray-600">Student ID</th>
+    <th class="p-4 font-semibold text-gray-600">Student Name</th>
+  </tr>
+</thead>
             <tbody id="attendee-list">
               </tbody>
           </table>
@@ -186,9 +187,11 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
       const row = document.createElement("tr");
       row.className = "border-b last:border-0 hover:bg-gray-50";
       row.innerHTML = `
-        <td class="p-4 text-gray-600">${index + 1}</td>
-        <td class="p-4 font-medium text-gray-800">${student.name}</td>
-      `;
+  <td class="p-4 text-gray-600">${index + 1}</td>
+  <td class="p-4 text-gray-600">${student.id}</td>
+  <td class="p-4 font-medium text-gray-800">${student.name}</td>
+`;
+
       listEl.appendChild(row);
     });
 
@@ -196,30 +199,30 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
   }
 
   function downloadExcel() {
-    const dataForSheet = [
-        ["Lecture:", lectureDetails.name],
-        ["Date:", lectureDetails.date],
-        ["Time:", lectureDetails.time],
-        [], // Blank row for spacing
-        ["Sr. No.", "Student Name"]
-    ];
+  const dataForSheet = [
+      ["Lecture:", lectureDetails.name],
+      ["Date:", lectureDetails.date],
+      ["Time:", lectureDetails.time],
+      ["Total Attendees:", presentStudents.length], // ✅ total attendees
+      [], // Blank row
+      ["Sr. No.", "Student ID", "Student Name"]
+  ];
 
-    presentStudents.forEach((student, index) => {
-        dataForSheet.push([index + 1, student.name]);
-    });
+  presentStudents.forEach((student, index) => {
+      dataForSheet.push([index + 1, student.id, student.name]);
+  });
 
-    const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
-    
-    // Set column widths
-    worksheet['!cols'] = [{ wch: 15 }, { wch: 40 }];
+  const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+  // Set column widths
+  worksheet['!cols'] = [{ wch: 10 }, { wch: 15 }, { wch: 40 }];
 
-    // Sanitize filename
-    const filename = `${lectureDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance.xlsx`;
-    XLSX.writeFile(workbook, filename);
-  }
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+  const filename = `${lectureDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance.xlsx`;
+  XLSX.writeFile(workbook, filename);
+}
 
   // --- Initial Load & Event Listeners ---
   window.addEventListener("DOMContentLoaded", () => {
