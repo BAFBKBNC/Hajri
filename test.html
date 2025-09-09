@@ -147,7 +147,7 @@
     const lecturesTable = `${course}_lectures`;
     const studentsTable = `${course}_students`;
 
-    const { data: lecture, error: lectureErr } = await supabase.from(lecturesTable).select("*").eq("NO", lectureNo).single();
+    const { data: lecture, error: lectureErr } = await supabase.from(lecturesTable).select("LECTURE, DATE, TIME, attendees").eq("NO", lectureNo).single();
     if (lectureErr || !lecture) {
       mainContent.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-md text-center text-red-600 font-semibold">Error: Could not find the specified lecture.</div>`;
       return;
@@ -157,29 +157,45 @@
     document.getElementById("lecture-title").textContent = lectureDetails.name;
     document.getElementById("lecture-meta").textContent = `${lectureDetails.date} | ${lectureDetails.time}`;
 
-    const presentIds = new Set(lecture.attendees || []);
-    if (presentIds.size === 0) {
+    const attendeesString = lecture.attendees;
+    // If the attendees string is empty or null, show an empty list
+    if (!attendeesString) {
         renderAttendeeList([]);
         return;
     }
 
-    // MODIFIED: Fetched student_id along with name and id
-    const { data: allStudents, error: stuErr } = await supabase.from(studentsTable).select("id, name, student_id").order("name");
+    // Split the comma-separated string into an array of IDs, trimming any whitespace
+    const presentStudentIds = attendeesString.split(',').map(id => id.trim());
+
+    if (presentStudentIds.length === 0) {
+        renderAttendeeList([]);
+        return;
+    }
+
+    // --- NEW LOGIC ---
+    // Fetch only the students whose ID is in our list.
+    // ⚠️ IMPORTANT: Confirm that 'student_id' is the correct column name for the Student ID in your students table.
+    const { data: studentsData, error: stuErr } = await supabase
+        .from(studentsTable)
+        .select("name, student_id") // Select the columns you want to display
+        .in('student_id', presentStudentIds) // Use .in() to match IDs from the array
+        .order("name");
+
     if (stuErr) {
-      listEl.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error fetching student list.</td></tr>`;
+      listEl.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error fetching student list. Check column names.</td></tr>`;
+      console.error("Supabase Error:", stuErr); // Log the detailed error to the console
       return;
     }
 
-    presentStudents = allStudents.filter(stu => presentIds.has(stu.id.toString()));
+    presentStudents = studentsData;
     renderAttendeeList(presentStudents);
   }
 
   function renderAttendeeList(attendees) {
-    listEl.innerHTML = ""; // Clear list
+    listEl.innerHTML = "";
     document.getElementById('attendee-count').textContent = `Present Students (${attendees.length})`;
 
     if (attendees.length === 0) {
-      // MODIFIED: Changed colspan to 3 to account for the new column
       listEl.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500">No students were marked present for this lecture.</td></tr>`;
       downloadBtn.disabled = true;
       return;
@@ -188,7 +204,7 @@
     attendees.forEach((student, index) => {
       const row = document.createElement("tr");
       row.className = "border-b last:border-0 hover:bg-gray-50";
-      // MODIFIED: Added a table cell for the student_id
+      // ⚠️ IMPORTANT: Make sure 'student.student_id' matches the column name you selected.
       row.innerHTML = `
         <td class="p-4 text-gray-600">${index + 1}</td>
         <td class="p-4 text-gray-700 font-mono">${student.student_id}</td>
@@ -201,30 +217,26 @@
   }
 
   function downloadExcel() {
-    // MODIFIED: Added total attendees and updated headers
     const dataForSheet = [
         ["Lecture:", lectureDetails.name],
         ["Date:", lectureDetails.date],
         ["Time:", lectureDetails.time],
         ["Total Attendees:", presentStudents.length],
-        [], // Blank row for spacing
+        [], // Blank row
         ["Sr. No.", "Student ID", "Student Name"]
     ];
 
-    // MODIFIED: Added student.student_id to each row
     presentStudents.forEach((student, index) => {
+        // ⚠️ IMPORTANT: Make sure 'student.student_id' matches the column name.
         dataForSheet.push([index + 1, student.student_id, student.name]);
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
-    
-    // MODIFIED: Adjusted column widths for the three data columns
     worksheet['!cols'] = [{ wch: 10 }, { wch: 20 }, { wch: 40 }];
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
 
-    // Sanitize filename
     const filename = `${lectureDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance.xlsx`;
     XLSX.writeFile(workbook, filename);
   }
@@ -241,7 +253,6 @@
     loadLectureDetails();
     downloadBtn.addEventListener("click", downloadExcel);
 
-    // Logout Logic
     document.getElementById('logout-btn').addEventListener('click', (e) => {
       e.preventDefault();
       const cookies = document.cookie.split(";");
