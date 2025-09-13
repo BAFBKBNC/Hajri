@@ -28,6 +28,18 @@
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
     }
+    /* Simple spinner animation */
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -126,13 +138,16 @@
               >
               <button 
                 id="add-tag-btn" 
-                class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 ease-in-out disabled:opacity-75 disabled:cursor-not-allowed"
+                style="min-width: 100px;"
               >
-                <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
-                <span>Add Tag</span>
+                <span class="button-content">
+                  <i data-lucide="plus" class="w-4 h-4 mr-1 inline-block"></i>
+                  <span>Add Tag</span>
+                </span>
               </button>
             </div>
-            <p id="tag-error-msg" class="text-red-500 text-sm mt-2 hidden"></p>
+            <p id="tag-error-msg" class="text-red-500 text-sm mt-2 h-5"></p>
           </div>
 
           <div class="bg-white rounded-lg shadow-md">
@@ -204,6 +219,7 @@
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let currentStudent = null;
+  let addTagTimeout = null;
 
   // --- HELPER FUNCTIONS ---
   function getUrlParams() {
@@ -354,24 +370,30 @@
 
   async function addNewTag() {
     const addTagBtn = document.getElementById('add-tag-btn');
+    const buttonContent = addTagBtn.querySelector('.button-content');
     const newTagInput = document.getElementById('new-tag-input');
     const errorMsg = document.getElementById('tag-error-msg');
     const newTag = newTagInput.value.trim();
 
+    clearTimeout(addTagTimeout); // Clear any existing reset timer
+    errorMsg.textContent = ''; // Clear previous errors
+
     if (!newTag) {
         errorMsg.textContent = "Tag cannot be empty.";
-        errorMsg.classList.remove('hidden');
+        addTagTimeout = setTimeout(() => { errorMsg.textContent = ''; }, 3000);
         return;
     }
     if (!currentStudent) {
         errorMsg.textContent = "Student data not loaded yet.";
-        errorMsg.classList.remove('hidden');
+        addTagTimeout = setTimeout(() => { errorMsg.textContent = ''; }, 3000);
         return;
     }
-    errorMsg.classList.add('hidden');
 
+    // --- Set Loading State ---
     addTagBtn.disabled = true;
-    addTagBtn.querySelector('span').textContent = 'Adding...';
+    buttonContent.innerHTML = `<div class="spinner"></div>`;
+    addTagBtn.classList.remove('bg-green-600', 'bg-red-600');
+    addTagBtn.classList.add('bg-indigo-600');
 
     let currentTags = [...currentStudent.roles];
     let updatedTags;
@@ -389,20 +411,41 @@
         .eq('id', studentId)
         .select()
         .single();
+    
+    // --- Define Reset State ---
+    const resetToDefault = () => {
+        buttonContent.innerHTML = `<i data-lucide="plus" class="w-4 h-4 mr-1 inline-block"></i><span>Add Tag</span>`;
+        lucide.createIcons();
+        addTagBtn.classList.remove('bg-green-600', 'bg-red-600');
+        addTagBtn.classList.add('bg-indigo-600');
+        addTagBtn.disabled = false;
+    };
 
     if (error) {
         console.error("Error updating tags:", error);
+        // --- Set Error State ---
+        buttonContent.innerHTML = `<i data-lucide="x" class="w-4 h-4 mr-1 inline-block"></i><span>Failed</span>`;
+        lucide.createIcons();
+        addTagBtn.classList.remove('bg-indigo-600');
+        addTagBtn.classList.add('bg-red-600');
         errorMsg.textContent = "Failed to add tag. Please try again.";
-        errorMsg.classList.remove('hidden');
+        addTagTimeout = setTimeout(() => {
+            resetToDefault();
+            errorMsg.textContent = '';
+        }, 3000);
+
     } else if (data) {
-        console.log("Tag added successfully:", data);
+        // --- Set Success State ---
+        buttonContent.innerHTML = `<i data-lucide="check" class="w-4 h-4 mr-1 inline-block"></i><span>Added</span>`;
+        lucide.createIcons();
+        addTagBtn.classList.remove('bg-indigo-600');
+        addTagBtn.classList.add('bg-green-600');
+        
         currentStudent = data;
         displayRolesAndTags(currentStudent.roles);
         newTagInput.value = '';
+        addTagTimeout = setTimeout(resetToDefault, 2000);
     }
-
-    addTagBtn.disabled = false;
-    addTagBtn.querySelector('span').textContent = 'Add Tag';
   }
 
   // --- MAIN DATA LOADING FUNCTION ---
