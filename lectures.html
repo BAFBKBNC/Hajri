@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lectures - ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -18,32 +29,32 @@
 <div class="flex min-h-screen">
   <div class="hidden md:flex flex-col w-64 bg-gray-900 text-gray-200 shadow-xl">
     <div class="flex items-center justify-center h-20 header-gradient text-white">
-      <lucide-icon name="graduation-cap" class="h-8 w-8 mr-3"></lucide-icon>
+      <i data-lucide="graduation-cap" class="h-8 w-8 mr-3"></i>
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
       <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="layout-dashboard" class="h-5 w-5 mr-3"></i>
         <span>Dashboard</span>
       </a>
       <a href="students.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="users" class="h-5 w-5 mr-3"></i>
         <span>Students</span>
       </a>
       <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
-        <lucide-icon name="book-open" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="book-open" class="h-5 w-5 mr-3"></i>
         <span>Lectures</span>
       </a>
       <a href="activities.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="puzzle" class="h-5 w-5 mr-3"></i>
         <span>Activities</span>
       </a>
       <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="key-round" class="h-5 w-5 mr-3"></i>
         <span>Change Password</span>
       </a>
       <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
-        <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="log-out" class="h-5 w-5 mr-3"></i>
         <span>Logout</span>
       </a>
     </nav>
@@ -100,15 +111,16 @@
     const card = document.createElement("div");
     card.className = "bg-white rounded-lg shadow-md p-6 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300";
 
+    // NEW: Changed icon tags in the template
     card.innerHTML = `
       <h3 class="text-xl font-bold text-gray-800 mb-2">${lecture.LECTURE}</h3>
       <div class="flex items-center space-x-4 text-gray-500 text-sm mb-4">
         <div class="flex items-center gap-1.5">
-          <lucide-icon name="calendar" class="h-4 w-4"></lucide-icon>
+          <i data-lucide="calendar" class="h-4 w-4"></i>
           <span>${lecture.DATE}</span>
         </div>
         <div class="flex items-center gap-1.5">
-          <lucide-icon name="clock" class="h-4 w-4"></lucide-icon>
+          <i data-lucide="clock" class="h-4 w-4"></i>
           <span>${lecture.TIME}</span>
         </div>
       </div>
@@ -152,7 +164,7 @@
   }
 
   // --- Initial Load & Event Listeners ---
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => { // NEW: made async
     // --- Auth & Profile Setup ---
     const course = getCookie("course");
     const profName = getCookie("name");
@@ -183,8 +195,9 @@
       window.location.href = "adminlogin.html";
     });
 
-    // --- Load Data ---
-    loadLectures(course);
+    // --- Load Data & Render Icons ---
+    await loadLectures(course); // NEW: await the data loading
+    lucide.createIcons(); // NEW: Render icons after everything is loaded
   });
 </script>
 
