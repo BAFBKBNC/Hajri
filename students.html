@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student List | ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,32 +45,32 @@
 <div class="flex min-h-screen">
   <div class="hidden md:flex flex-col w-64 bg-gray-900 text-gray-200 shadow-xl">
     <div class="flex items-center justify-center h-20 header-gradient text-white">
-      <lucide-icon name="graduation-cap" class="h-8 w-8 mr-3"></lucide-icon>
+      <i data-lucide="graduation-cap" class="h-8 w-8 mr-3"></i>
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
       <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="layout-dashboard" class="h-5 w-5 mr-3"></i>
         <span>Dashboard</span>
       </a>
       <a href="students.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
-        <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="users" class="h-5 w-5 mr-3"></i>
         <span>Students</span>
       </a>
       <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="book-open" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="book-open" class="h-5 w-5 mr-3"></i>
         <span>Lectures</span>
       </a>
       <a href="activities.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="puzzle" class="h-5 w-5 mr-3"></i>
         <span>Activities</span>
       </a>
       <a href="changeadminpassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="key-round" class="h-5 w-5 mr-3"></i>
         <span>Change Password</span>
       </a>
       <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
-        <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="log-out" class="h-5 w-5 mr-3"></i>
         <span>Logout</span>
       </a>
     </nav>
@@ -83,18 +94,18 @@
       <div class="card p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h2 class="text-xl font-semibold flex items-center gap-2">
-            <lucide-icon name="list-checks" class="h-5 w-5 text-indigo-600"></lucide-icon>
+            <i data-lucide="list-checks" class="h-5 w-5 text-indigo-600"></i>
             All Students
           </h2>
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
              <select id="subject-filter" class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white w-full sm:w-48">
-                <option value="All">All Subjects</option>
-            </select>
+               <option value="All">All Subjects</option>
+           </select>
             <input id="search-box" type="text" placeholder="Search by name or ID"
               class="px-3 py-2 border rounded-lg text-sm w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <button onclick="downloadExcel()"
               class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 transition-colors">
-              <lucide-icon name="download" class="h-4 w-4"></lucide-icon>
+              <i data-lucide="download" class="h-4 w-4"></i>
               <span>Excel</span>
             </button>
           </div>
@@ -188,7 +199,7 @@ function sortTable(colIndex) {
   rows.forEach(r => tbody.appendChild(r));
 }
 
-// ====== NEW: Core function to render the student table based on subject filter ======
+// ====== Core function to render the student table based on subject filter ======
 function renderStudentTable(selectedSubject = 'All') {
     const tableBody = document.getElementById("student-table-body");
     tableBody.innerHTML = "";
@@ -235,7 +246,7 @@ function renderStudentTable(selectedSubject = 'All') {
 }
 
 
-// ====== NEW: Function to populate the subject filter dropdown ======
+// ====== Function to populate the subject filter dropdown ======
 function populateSubjectFilter(lectures) {
     const subjectFilter = document.getElementById('subject-filter');
     const subjects = [...new Set(lectures.map(l => l.LECTURE))].sort(); // Get unique, sorted subjects
@@ -301,7 +312,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     allStudents = students || [];
     allLectures = lectures || [];
     
-    // NEW: Populate the filter and set up the event listener
+    // Populate the filter and set up the event listener
     populateSubjectFilter(allLectures);
     document.getElementById('subject-filter').addEventListener('change', (e) => {
         renderStudentTable(e.target.value);
@@ -309,6 +320,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initial render of the table with "All Subjects"
     renderStudentTable('All');
+
+    // NEW: Render icons after everything is loaded
+    lucide.createIcons();
 });
 </script>
 </body>
