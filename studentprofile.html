@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Profile - ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide-element"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -24,32 +35,32 @@
 <div class="flex min-h-screen">
   <div class="hidden md:flex flex-col w-64 bg-gray-900 text-gray-200 shadow-xl">
     <div class="flex items-center justify-center h-20 header-gradient text-white">
-      <lucide-icon name="graduation-cap" class="h-8 w-8 mr-3"></lucide-icon>
+      <i data-lucide="graduation-cap" class="h-8 w-8 mr-3"></i>
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
       <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="layout-dashboard" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="layout-dashboard" class="h-5 w-5 mr-3"></i>
         <span>Dashboard</span>
       </a>
       <a href="students.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
-        <lucide-icon name="users" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="users" class="h-5 w-5 mr-3"></i>
         <span>Students</span>
       </a>
       <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="book-open" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="book-open" class="h-5 w-5 mr-3"></i>
         <span>Lectures</span>
       </a>
       <a href="activities.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="puzzle" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="puzzle" class="h-5 w-5 mr-3"></i>
         <span>Activities</span>
       </a>
       <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
-        <lucide-icon name="key-round" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="key-round" class="h-5 w-5 mr-3"></i>
         <span>Change Password</span>
       </a>
       <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
-        <lucide-icon name="log-out" class="h-5 w-5 mr-3"></lucide-icon>
+        <i data-lucide="log-out" class="h-5 w-5 mr-3"></i>
         <span>Logout</span>
       </a>
     </nav>
@@ -100,28 +111,28 @@
         <div class="lg:col-span-2 space-y-8">
           
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="tags" class="w-5 h-5 text-indigo-500"></lucide-icon>Roles & Tags</h3>
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i>Roles & Tags</h3>
             <div id="roles-tags-list" class="flex flex-wrap gap-2">
               <p class="text-sm text-gray-500">No roles or tags assigned.</p>
             </div>
           </div>
 
           <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="book-open-check" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
+             <div class="p-6 border-b flex items-center gap-2"><i data-lucide="book-open-check" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
              <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
           </div>
 
           <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="award" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
+             <div class="p-6 border-b flex items-center gap-2"><i data-lucide="award" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
              <div id="recent-activities-list" class="divide-y divide-gray-100"></div>
           </div>
 
            <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="clipboard-list" class="w-5 h-5 text-indigo-500"></lucide-icon>Field Project Details</h3>
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-500"></i>Field Project Details</h3>
              <div id="field-project-details" class="space-y-3">
                  <div class="text-center text-gray-500 py-8">
-                    <p class="font-medium">Project details not yet updated.</p>
-                </div>
+                     <p class="font-medium">Project details not yet updated.</p>
+                 </div>
             </div>
           </div>
 
@@ -130,12 +141,12 @@
         <div class="lg:col-span-1 space-y-8">
 
           <div class="bg-white rounded-lg shadow-md">
-             <div class="p-6 border-b flex items-center gap-2"><lucide-icon name="pie-chart" class="w-5 h-5 text-indigo-500"></lucide-icon><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
+             <div class="p-6 border-b flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
              <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
           </div>
           
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><lucide-icon name="bar-chart-3" class="w-5 h-5 text-indigo-500"></lucide-icon>Weekly Test Insights</h3>
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-500"></i>Weekly Test Insights</h3>
             <div class="text-center text-gray-500 py-8">
               <p class="font-medium">No insights available currently.</p>
             </div>
@@ -175,7 +186,6 @@
     circle.style.strokeDashoffset = offset;
   }
 
-  // NEW: Function to get full course name from course code
   function getFullCourseName(courseCode = '') {
       const code = courseCode.toLowerCase();
       const courseMap = {
@@ -192,16 +202,12 @@
       const studentName = student.name || 'N/A';
       document.getElementById('profile-initial-main').textContent = studentName.charAt(0).toUpperCase();
       document.getElementById('profile-name').textContent = studentName;
-
-      // NEW: Derive year and full course name from the URL course code
       const year = courseCode.substring(0, 2).toUpperCase();
       const fullCourseName = getFullCourseName(courseCode);
       document.getElementById('profile-course-year').textContent = `${fullCourseName} - ${year}`;
-      
       document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
   }
 
-  // UPDATED: Handles 'roles' column and checks for "No Tags"
   function displayRolesAndTags(tags) {
       const container = document.getElementById('roles-tags-list');
       if (!tags || tags.length === 0 || (tags.length === 1 && tags[0] === 'No Tags')) {
@@ -282,7 +288,7 @@
                   <p class="font-semibold text-gray-900">${type === 'lectures' ? item.LECTURE : item.EVENTS}</p>
                   <p class="text-sm text-gray-500">${item.DATE} at ${item.TIME}</p>
                 </div>
-                <lucide-icon name="check-circle-2" class="w-5 h-5 text-green-500"></lucide-icon>
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>
               </div>
           `;
       });
@@ -295,7 +301,6 @@
         document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
         return;
     }
-    // UPDATED: Fetching the 'roles' column specifically
     const [studentRes, lecturesRes, eventsRes] = await Promise.all([
         supabase.from(`${course}_students`).select('*, roles').eq('id', studentId).single(),
         supabase.from(`${course}_lectures`).select('NO, LECTURE, DATE, TIME, attendees'),
@@ -308,8 +313,8 @@
         return;
     }
     const student = studentRes.data;
-    displayProfileInfo(student, course); // Pass course code for processing
-    displayRolesAndTags(student.roles); // Pass student.roles from the DB
+    displayProfileInfo(student, course);
+    displayRolesAndTags(student.roles);
 
     const allLectures = lecturesRes.data || [];
     const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
@@ -325,7 +330,7 @@
   }
 
   // --- INITIALIZATION ---
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => { // NEW: made async
     const profName = getCookie("name");
     if (profName) {
       const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
@@ -333,7 +338,9 @@
       document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
     }
     document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
-    loadStudentProfile();
+    
+    await loadStudentProfile(); // NEW: awaited the data loading
+    lucide.createIcons(); // NEW: Render icons after all content is on the page
   });
 </script>
 
