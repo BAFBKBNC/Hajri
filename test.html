@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ClassCount</title>
+  <title>Student Profile - ClassCount</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,19 +16,18 @@
       }
     }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; }
-    .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
     .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    .badge-safe { background-color: #dcfce7; color: #166534; }
-    .badge-warning { background-color: #fef9c3; color: #854d0e; }
-    .badge-danger { background-color: #fee2e2; color: #991b1b; }
+    .profile-header-card { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.6s ease-out;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -40,11 +39,11 @@
       <span class="text-2xl font-bold">ClassCount</span>
     </div>
     <nav class="flex flex-col flex-grow p-4">
-      <a href="#" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
+      <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <i data-lucide="layout-dashboard" class="h-5 w-5 mr-3"></i>
         <span>Dashboard</span>
       </a>
-      <a href="students.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="students.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
         <i data-lucide="users" class="h-5 w-5 mr-3"></i>
         <span>Students</span>
       </a>
@@ -56,7 +55,7 @@
         <i data-lucide="puzzle" class="h-5 w-5 mr-3"></i>
         <span>Activities</span>
       </a>
-      <a href="changeadminpassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+      <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
         <i data-lucide="key-round" class="h-5 w-5 mr-3"></i>
         <span>Change Password</span>
       </a>
@@ -69,326 +68,281 @@
 
   <div class="flex flex-col flex-1 overflow-y-auto">
     <header class="flex items-center justify-between h-20 px-4 sm:px-8 bg-white border-b shadow-sm sticky top-0 z-10">
-      <h1 id="dashboard-title" class="text-xl sm:text-2xl font-bold text-gray-900">Mentor Dashboard</h1>
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Student Profile</h1>
       <div class="flex items-center space-x-4">
         <div class="text-sm text-gray-600 text-right">
           <p id="prof-name" class="font-semibold">Prof. ...</p>
-          <p id="current-date" class="text-xs"></p>
         </div>
-        <div id="prof-initial" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold border-2 border-indigo-300">
-          ?
-        </div>
+        <div id="prof-initial" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold border-2 border-indigo-300">?</div>
       </div>
     </header>
 
-    <main class="p-4 sm:p-8 space-y-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="card p-6 flex items-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-          <div class="p-3 rounded-full bg-white bg-opacity-20"><i data-lucide="users-2" class="h-7 w-7"></i></div>
-          <div class="ml-4"><p class="text-sm opacity-80">Total Students</p><p id="total-students" class="text-3xl font-bold">0</p></div>
+    <main class="p-4 sm:p-8">
+        <div class="profile-header-card text-white p-6 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <div id="profile-initial-main" class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 text-white flex-shrink-0 flex items-center justify-center text-5xl font-bold border-4 border-white/50">
+                    ?
+                </div>
+                <div>
+                    <h2 id="profile-name" class="text-3xl font-bold">Loading...</h2>
+                    <p id="profile-course-year" class="text-indigo-200 font-medium mt-1"></p>
+                    <p class="text-sm text-indigo-200 mt-2">Mentor: <span id="profile-mentor" class="font-semibold"></span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-center">
+                <div class="relative w-28 h-28">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-white/20" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                        <circle id="progress-circle" class="progress-ring__circle text-white" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="attendancePercent" class="text-2xl font-bold">--%</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-lg font-semibold">Overall Attendance</p>
+                    <p id="attendanceStatusText" class="font-bold text-xl mt-1">--</p>
+                </div>
+            </div>
         </div>
-        <div class="card p-6 flex items-center bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-          <div class="p-3 rounded-full bg-white bg-opacity-20"><i data-lucide="user-check" class="h-7 w-7"></i></div>
-          <div class="ml-4"><p class="text-sm opacity-80">Safe Zone (&gt;75%)</p><p id="safe-zone" class="text-3xl font-bold">0</p></div>
-        </div>
-        <div class="card p-6 flex items-center bg-gradient-to-br from-yellow-500 to-amber-600 text-white">
-          <div class="p-3 rounded-full bg-white bg-opacity-20"><i data-lucide="user-cog" class="h-7 w-7"></i></div>
-          <div class="ml-4"><p class="text-sm opacity-80">Warning Zone</p><p id="warning-zone" class="text-3xl font-bold">0</p></div>
-        </div>
-        <div class="card p-6 flex items-center bg-gradient-to-br from-red-500 to-rose-600 text-white">
-          <div class="p-3 rounded-full bg-white bg-opacity-20"><i data-lucide="user-x" class="h-7 w-7"></i></div>
-          <div class="ml-4"><p class="text-sm opacity-80">Danger Zone (&lt;50%)</p><p id="danger-zone" class="text-3xl font-bold">0</p></div>
-        </div>
-      </div>
 
-      <div class="card p-6">
-        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2"><i data-lucide="line-chart" class="h-5 w-5 text-indigo-600"></i>Overall Attendance Trend (Last 30 Lectures)</h2>
-        <div class="h-96 w-full"><canvas id="attendanceTrendChart"></canvas></div>
-      </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="card p-6 lg:col-span-2"><h2 class="text-xl font-semibold mb-4 flex items-center gap-2"><i data-lucide="bar-chart-2" class="h-5 w-5 text-blue-600"></i>Subject-wise Attendance</h2><div class="h-80"><canvas id="subjectAttendanceChart"></canvas></div></div>
-        <div class="card p-6"><h2 class="text-xl font-semibold mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="h-5 w-5 text-purple-600"></i>Student Distribution</h2><div class="h-80 flex items-center justify-center"><canvas id="distributionChart"></canvas></div></div>
-      </div>
-
-      <div class="card p-6">
-        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2"><i data-lucide="calendar-clock" class="h-5 w-5 text-gray-700"></i>Recent Lectures</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="p-3 font-semibold text-gray-600">Subject</th>
-                <th class="p-3 font-semibold text-gray-600">Date</th>
-                <th class="p-3 font-semibold text-gray-600 text-center">Attendees</th>
-                <th class="p-3 font-semibold text-gray-600 text-right">Attendance (%)</th>
-              </tr>
-            </thead>
-            <tbody id="recent-lectures-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="student-records-section" class="card p-6">
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          <h2 class="text-xl font-semibold flex items-center gap-2">
-            <i data-lucide="list-checks" class="h-5 w-5 text-indigo-600"></i>
-            Student Records
-          </h2>
-          <div class="flex gap-2">
-            <input id="search-box" type="text" placeholder="Search by name or ID"
-              class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <button onclick="downloadExcel()"
-              class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 flex items-center gap-2">
-              <i data-lucide="download" class="h-4 w-4"></i>
-              <span>Excel</span>
-            </button>
+        
+        <div class="lg:col-span-2 space-y-8">
+          
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i>Roles & Tags</h3>
+            <div id="roles-tags-list" class="flex flex-wrap gap-2">
+              <p class="text-sm text-gray-500">No roles or tags assigned.</p>
+            </div>
           </div>
+
+          <div class="bg-white rounded-lg shadow-md">
+             <div class="p-6 border-b flex items-center gap-2"><i data-lucide="book-open-check" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
+             <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-md">
+             <div class="p-6 border-b flex items-center gap-2"><i data-lucide="award" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
+             <div id="recent-activities-list" class="divide-y divide-gray-100"></div>
+          </div>
+
+           <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-500"></i>Field Project Details</h3>
+             <div id="field-project-details" class="space-y-3">
+                 <div class="text-center text-gray-500 py-8">
+                     <p class="font-medium">Project details not yet updated.</p>
+                 </div>
+            </div>
+          </div>
+
         </div>
-        <div class="overflow-x-auto">
-          <table id="student-table" class="w-full text-left border-collapse">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-4 cursor-pointer font-semibold" onclick="sortTable(0)">ID</th>
-                <th class="p-4 cursor-pointer font-semibold" onclick="sortTable(1)">Student Name</th>
-                <th class="p-4 cursor-pointer font-semibold" onclick="sortTable(2)">Overall Attendance</th>
-                <th class="p-4 font-semibold">Status</th>
-                <th class="p-4 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="student-table-body"></tbody>
-          </table>
+
+        <div class="lg:col-span-1 space-y-8">
+
+          <div class="bg-white rounded-lg shadow-md">
+             <div class="p-6 border-b flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
+             <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
+          </div>
+          
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-500"></i>Weekly Test Insights</h3>
+            <div class="text-center text-gray-500 py-8">
+              <p class="font-medium">No insights available currently.</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </main>
   </div>
 </div>
 
-<script>
-// All your existing JS code remains the same...
-const supabaseClient = window.supabase.createClient("https://pwgdubtbvqnmivtupbvx.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg");
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+  const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function downloadExcel() {
-  let wb = XLSX.utils.book_new();
-  let ws_data = [["ID","Student Name","Attendance %","Status"]];
-  document.querySelectorAll("#student-table-body tr").forEach(tr=>{
-    let cols = tr.querySelectorAll("td");
-    ws_data.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
-  });
-  let ws = XLSX.utils.aoa_to_sheet(ws_data);
-  XLSX.utils.book_append_sheet(wb, ws, "Student Records");
-  XLSX.writeFile(wb, "student_records.xlsx");
-}
-
-document.addEventListener("input", e=>{
-  if(e.target.id==="search-box"){
-    let filter = e.target.value.toLowerCase();
-    document.querySelectorAll("#student-table-body tr").forEach(tr=>{
-      let text = tr.innerText.toLowerCase();
-      tr.style.display = text.includes(filter) ? "" : "none";
-    });
+  // --- HELPER FUNCTIONS ---
+  function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return { studentId: params.get("id"), course: params.get("course") };
   }
-});
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
+  function setProgress(percent) {
+    const circle = document.getElementById('progress-circle');
+    if (!circle) return;
+    const radius = circle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percent / 100) * circumference;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = offset;
+  }
 
-let sortDirection = {};
-function sortTable(colIndex) {
-  const tbody = document.getElementById("student-table-body");
-  let rows = Array.from(tbody.querySelectorAll("tr"));
-  sortDirection[colIndex] = !sortDirection[colIndex];
-  rows.sort((a,b)=>{
-    let A = a.cells[colIndex].innerText;
-    let B = b.cells[colIndex].innerText;
-    if(colIndex===2) { A = parseInt(A); B = parseInt(B); }
-    if(A < B) return sortDirection[colIndex] ? -1 : 1;
-    if(A > B) return sortDirection[colIndex] ? 1 : -1;
-    return 0;
-  });
-  tbody.innerHTML = "";
-  rows.forEach(r=>tbody.appendChild(r));
-}
+  function getFullCourseName(courseCode = '') {
+      const code = courseCode.toLowerCase();
+      const courseMap = {
+          'fyba': 'FY BA', 'fybcom': 'FY BCOM', 'fybsc': 'FY BSC', 'fybms': 'FY BCOM (Management Studies)', 'fybaf': 'FY BCOM (Accounting & Finance)', 'fybfm': 'FY BCOM (Financial Markets)', 'fybsccs': 'FY BSC (Computer Science)',
+          'syba': 'SY BA', 'sybcom': 'SY BCOM', 'sybsc': 'SY BSC', 'sybms': 'SY BCOM (Management Studies)', 'sybaf': 'SY BCOM (Accounting & Finance)', 'sybfm': 'SY BCOM (Financial Markets)', 'sybsccs': 'SY BSC (Computer Science)',
+          'tyba': 'TY BA', 'tybcom': 'TY BCOM', 'tybsc': 'TY BSC', 'tybms': 'TY BCOM (Management Studies)', 'tybaf': 'TY BCOM (Accounting & Finance)', 'tybfm': 'TY BCOM (Financial Markets)', 'tybsccs': 'TY BSC (Computer Science)'
+      };
+      return courseMap[code] || code.toUpperCase(); // Fallback to uppercase code
+  }
+  
+  // --- UI UPDATE FUNCTIONS ---
+  
+  function displayProfileInfo(student, courseCode) {
+      const studentName = student.name || 'N/A';
+      document.getElementById('profile-initial-main').textContent = studentName.charAt(0).toUpperCase();
+      document.getElementById('profile-name').textContent = studentName;
+      const year = courseCode.substring(0, 2).toUpperCase();
+      const fullCourseName = getFullCourseName(courseCode);
+      document.getElementById('profile-course-year').textContent = `${fullCourseName} - ${year}`;
+      document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
+  }
 
-function parseDDMMYYYY(dateString) {
-    const [day, month, year] = dateString.split('/');
-    return new Date(year, month - 1, day);
-}
+  function displayRolesAndTags(tags) {
+      const container = document.getElementById('roles-tags-list');
+      if (!tags || tags.length === 0 || (tags.length === 1 && tags[0] === 'No Tags')) {
+          container.innerHTML = `<p class="text-sm text-gray-500">No roles or tags assigned.</p>`;
+          return;
+      }
+      
+      container.innerHTML = '';
+      tags.forEach(tag => {
+          let colorClasses = 'bg-gray-100 text-gray-800';
+          if (['NCC', 'NSS', 'Sports'].includes(tag)) colorClasses = 'bg-blue-100 text-blue-800';
+          if (['Good Conduct'].includes(tag)) colorClasses = 'bg-green-100 text-green-800';
+          if (['Misbehavior', 'Medically Unstable'].includes(tag)) colorClasses = 'bg-red-100 text-red-800';
+          if (['Class Representative'].includes(tag)) colorClasses = 'bg-indigo-100 text-indigo-800';
+          
+          container.innerHTML += `<span class="px-3 py-1 text-sm font-semibold rounded-full ${colorClasses}">${tag}</span>`;
+      });
+  }
 
-function renderTrendChart(lectures, students) {
-    const sortedLectures = [...lectures].sort((a, b) => parseDDMMYYYY(a.DATE) - parseDDMMYYYY(b.DATE));
-    const last30Lectures = sortedLectures.slice(-30);
-    const dailyData = last30Lectures.reduce((acc, lecture) => {
-        const dateStr = lecture.DATE;
-        if (!acc[dateStr]) {
-            acc[dateStr] = { totalAttendees: 0, lectureCount: 0 };
-        }
-        acc[dateStr].totalAttendees += lecture.attendees.length;
-        acc[dateStr].lectureCount += 1;
-        return acc;
-    }, {});
-    const chartData = Object.keys(dailyData)
-        .map(date => ({
-            date: date,
-            avgAttendance: students.length > 0 ? Math.round(
-                (dailyData[date].totalAttendees / (dailyData[date].lectureCount * students.length)) * 100
-            ) : 0
-        }))
-        .sort((a, b) => parseDDMMYYYY(a.date) - parseDDMMYYYY(b.date));
+  function displayOverallAttendance(attendedCount, totalCount) {
+      const percent = totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
+      document.getElementById('attendancePercent').textContent = `${percent}%`;
+      const statusText = document.getElementById('attendanceStatusText');
+      const progressCircle = document.getElementById('progress-circle');
+      
+      let status = "Danger";
+      let statusColor = 'text-red-300';
+      if (percent >= 75) { status = "Safe"; statusColor = 'text-green-300'; } 
+      else if (percent >= 50) { status = "Warning"; statusColor = 'text-yellow-300';}
+      
+      statusText.textContent = status;
+      progressCircle.classList.add(statusColor);
+      setTimeout(() => setProgress(percent), 100);
+  }
 
-    const labels = chartData.map(item => parseDDMMYYYY(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
-    const data = chartData.map(item => item.avgAttendance);
+  function displaySubjectAttendance(allLectures, attendedLectureIds) {
+      const container = document.getElementById('subject-attendance-list');
+      if(allLectures.length === 0) {
+        container.innerHTML = `<tr><td class="p-4 text-center text-gray-500">No lecture data available.</td></tr>`;
+        return;
+      };
+      container.innerHTML = '';
+      const subjectStats = allLectures.reduce((acc, lecture) => {
+          const name = lecture.LECTURE;
+          if (!acc[name]) acc[name] = { total: 0, attended: 0 };
+          acc[name].total++;
+          if (attendedLectureIds.has(lecture.NO)) acc[name].attended++;
+          return acc;
+      }, {});
 
-    new Chart(document.getElementById("attendanceTrendChart"), {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Average Attendance % (Last 30 Lectures)",
-                data: data,
-                borderColor: "#4f46e5",
-                backgroundColor: "rgba(79, 70, 229, 0.1)",
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, max: 100 } }
-        }
-    });
-}
+      Object.entries(subjectStats).forEach(([subject, stats]) => {
+          const percent = stats.total > 0 ? Math.round((stats.attended / stats.total) * 100) : 0;
+          let color = percent >= 75 ? 'bg-green-500' : percent >= 50 ? 'bg-orange-500' : 'bg-red-500';
+          
+          container.innerHTML += `
+              <tr class="border-b border-gray-100 last:border-b-0">
+                  <td class="p-3 font-medium text-gray-800">${subject}</td>
+                  <td class="p-3 w-1/4">
+                      <div class="w-full bg-gray-200 rounded-full h-2"><div class="${color} h-2 rounded-full" style="width: ${percent}%"></div></div>
+                  </td>
+                  <td class="p-3 font-bold text-gray-700 w-16 text-right">${percent}%</td>
+              </tr>
+          `;
+      });
+  }
+  
+  function renderItemList(containerId, items, type) {
+      const container = document.getElementById(containerId);
+      if (!items || items.length === 0) {
+          container.innerHTML = `<p class="p-6 text-center text-gray-500">No recent ${type} found.</p>`;
+          return;
+      }
+      container.innerHTML = '';
+      items.slice(0, 5).forEach(item => {
+          container.innerHTML += `
+              <div class="flex items-center justify-between p-4 hover:bg-gray-50">
+                <div>
+                  <p class="font-semibold text-gray-900">${type === 'lectures' ? item.LECTURE : item.EVENTS}</p>
+                  <p class="text-sm text-gray-500">${item.DATE} at ${item.TIME}</p>
+                </div>
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>
+              </div>
+          `;
+      });
+  }
 
-function renderRecentLectures(lectures, students) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const body = document.getElementById("recent-lectures-body");
-    body.innerHTML = "";
-    const sorted = [...lectures]
-        .filter(l => parseDDMMYYYY(l.DATE) <= today)
-        .sort((a, b) => parseDDMMYYYY(b.DATE) - parseDDMMYYYY(a.DATE));
-    const recent = sorted.slice(0, 5);
-
-    if (recent.length === 0) {
-        body.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No recent lectures found.</td></tr>`;
+  // --- MAIN DATA LOADING FUNCTION ---
+  async function loadStudentProfile() {
+    const { studentId, course } = getUrlParams();
+    if (!studentId || !course) {
+        document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
         return;
     }
+    const [studentRes, lecturesRes, eventsRes] = await Promise.all([
+        supabase.from(`${course}_students`).select('*, roles').eq('id', studentId).single(),
+        supabase.from(`${course}_lectures`).select('NO, LECTURE, DATE, TIME, attendees'),
+        supabase.from(`${course}_events`).select('NO, EVENTS, DATE, TIME, attendees')
+    ]);
 
-    recent.forEach(l => {
-        const count = l.attendees.length;
-        const total = students.length;
-        const percent = total > 0 ? Math.round((count / total) * 100) : 0;
-        const formattedDate = parseDDMMYYYY(l.DATE).toLocaleDateString("en-GB", {
-            day: 'numeric', month: 'long', year: 'numeric'
-        });
-        body.insertAdjacentHTML("beforeend", `
-            <tr class="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
-              <td class="p-3 font-medium text-gray-800">${l.LECTURE}</td>
-              <td class="p-3 text-sm text-gray-500">${formattedDate}</td>
-              <td class="p-3 text-sm text-gray-700 font-medium text-center">${count} / ${total}</td>
-              <td class="p-3 text-sm font-bold text-right text-indigo-600">${percent}%</td>
-            </tr>`);
-    });
-}
+    if (studentRes.error || !studentRes.data) {
+        console.error("Student not found:", studentRes.error);
+        document.getElementById('profile-name').textContent = "Student Not Found";
+        return;
+    }
+    const student = studentRes.data;
+    displayProfileInfo(student, course);
+    displayRolesAndTags(student.roles);
 
-document.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+    const allLectures = lecturesRes.data || [];
+    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
+    const attendedLectureIds = new Set(attendedLectures.map(l => l.NO));
+    
+    displayOverallAttendance(attendedLectures.length, allLectures.length);
+    displaySubjectAttendance(allLectures, attendedLectureIds);
+    renderItemList('recent-lectures-list', attendedLectures.sort((a,b) => b.NO - a.NO), 'lectures');
 
-  const profName = getCookie("name");
-  if (profName) {
+    const allActivities = eventsRes.data || [];
+    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(studentId));
+    renderItemList('recent-activities-list', attendedActivities.sort((a,b) => b.NO - a.NO), 'activities');
+  }
+
+  // --- INITIALIZATION ---
+  document.addEventListener('DOMContentLoaded', async () => { // NEW: made async
+    const profName = getCookie("name");
+    if (profName) {
       const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
       document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
       document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
-  } else {
-      document.getElementById('prof-name').textContent = 'Prof. Guest';
-      document.getElementById('prof-initial').textContent = 'G';
-  }
-  
-  document.getElementById('logout-btn').addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     }
+    document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
     
-    window.location.href = "adminlogin.html";
+    await loadStudentProfile(); // NEW: awaited the data loading
+    lucide.createIcons(); // NEW: Render icons after all content is on the page
   });
-
-  const course = getCookie("course");
-  if (!course) {
-      window.location.href = "adminlogin.html";
-      return;
-  }
-  
-  document.getElementById("dashboard-title").textContent = course.toUpperCase().replace('_', ' ') + " Mentor Dashboard";
-
-  const studentsTable = `${course}_students`;
-  const lecturesTable = `${course}_lectures`;
-
-  const { data: students, error: studentsError } = await supabaseClient.from(studentsTable).select("id,name");
-  const { data: lectures, error: lecturesError } = await supabaseClient.from(lecturesTable).select("DATE,LECTURE,attendees");
-
-  if (studentsError || lecturesError || !students || !lectures) {
-      console.error("Error fetching data:", studentsError || lecturesError);
-      return;
-  }
-
-  const enriched = students.map(s => {
-    const attended = lectures.filter(l => l.attendees && l.attendees.includes(s.id.toString())).length;
-    const percentage = lectures.length ? Math.round((attended/lectures.length)*100) : 0;
-    return { ...s, attendance: percentage };
-  }).sort((a,b)=>b.attendance - a.attendance);
-
-  const tableBody = document.getElementById("student-table-body");
-  tableBody.innerHTML = "";
-  enriched.forEach(s => {
-    const status = s.attendance >= 75 ? "Safe" : s.attendance >= 50 ? "Warning" : "Danger";
-    const badge = status === "Safe" ? "badge-safe" : status === "Warning" ? "badge-warning" : "badge-danger";
-    const row = `<tr class="border-b hover:bg-gray-50">
-      <td class="p-4 text-sm text-gray-700">${s.id}</td>
-      <td class="p-4 font-medium text-gray-900">${s.name}</td>
-      <td class="p-4">${s.attendance}%</td>
-      <td class="p-4"><span class="px-3 py-1 text-xs font-medium rounded-full ${badge}">${status}</span></td>
-      <td class="p-4"><a href="studentprofile.html?id=${s.id}&course=${course}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a></td>
-    </tr>`;
-    tableBody.insertAdjacentHTML("beforeend", row);
-  });
-
-  document.getElementById("total-students").textContent = enriched.length;
-  document.getElementById("safe-zone").textContent = enriched.filter(s=>s.attendance>=75).length;
-  document.getElementById("warning-zone").textContent = enriched.filter(s=>s.attendance>=50&&s.attendance<75).length;
-  document.getElementById("danger-zone").textContent = enriched.filter(s=>s.attendance<50).length;
-
-  renderTrendChart(lectures, students);
-  renderRecentLectures(lectures, students);
-
-  new Chart(document.getElementById("distributionChart"), {
-    type:"doughnut",
-    data:{ labels:["Safe","Warning","Danger"], datasets:[{ data:[enriched.filter(s=>s.attendance>=75).length, enriched.filter(s=>s.attendance>=50&&s.attendance<75).length, enriched.filter(s=>s.attendance<50).length], backgroundColor:["#10b981","#f59e0b","#ef4444"] }] }
-  });
-
-  new Chart(document.getElementById("subjectAttendanceChart"), {
-    type:"bar",
-    data:{ labels:[...new Set(lectures.map(l=>l.LECTURE))],
-      datasets:[{ label:"Avg %", data:[...new Set(lectures.map(l=>l.LECTURE))].map(sub=>{
-        const ls=lectures.filter(l=>l.LECTURE===sub);
-        const totalPossible = ls.length*students.length;
-        const totalAttended = ls.reduce((s,l)=>s+(l.attendees ? l.attendees.length : 0),0);
-        return totalPossible > 0 ? Math.round(totalAttended/totalPossible*100) : 0;
-      }), backgroundColor:"#3b82f6" }]
-    }
-  });
-
-  // NEW: Added this line to render all the Lucide icons on the page
-  lucide.createIcons();
-});
 </script>
+
 </body>
 </html>
