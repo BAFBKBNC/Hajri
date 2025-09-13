@@ -93,7 +93,7 @@
                 <div class="relative w-28 h-28">
                     <svg class="w-full h-full" viewBox="0 0 100 100">
                         <circle class="text-white/20" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                        <circle id="progress-circle" class="progress-ring__circle text-white" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                        <circle id="progress-circle" class="progress-ring__circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
                         <span id="attendancePercent" class="text-2xl font-bold">--%</span>
@@ -130,6 +130,7 @@
                 <button id="cancel-tag-btn" type="button" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 text-sm">Cancel</button>
             </div>
           </div>
+
           <div class="bg-white rounded-lg shadow-md">
               <div class="p-6 border-b flex items-center gap-2"><i data-lucide="book-open-check" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
               <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
@@ -245,7 +246,6 @@
       document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
   }
 
-  // =========== NEW & IMPROVED displayRolesAndTags FUNCTION ===========
   function displayRolesAndTags(tags) {
       const container = document.getElementById('roles-tags-list');
       container.innerHTML = ''; 
@@ -274,8 +274,8 @@
       });
       lucide.createIcons();
   }
-  // ===================================================================
 
+  // =========== CORRECTED displayOverallAttendance FUNCTION ===========
   function displayOverallAttendance(attendedCount, totalCount) {
       const percent = totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
       document.getElementById('attendancePercent').textContent = `${percent}%`;
@@ -288,10 +288,18 @@
       else if (percent >= 50) { status = "Warning"; statusColor = 'text-yellow-300';}
       
       statusText.textContent = status;
-      statusText.className = `font-bold text-xl mt-1 ${statusColor}`;
-      progressCircle.className = `progress-ring__circle ${statusColor}`;
+
+      // Remove any old color classes from both elements
+      statusText.classList.remove('text-red-300', 'text-yellow-300', 'text-green-300');
+      progressCircle.classList.remove('text-red-300', 'text-yellow-300', 'text-green-300');
+
+      // Add the new, correct color class
+      statusText.classList.add(statusColor);
+      progressCircle.classList.add(statusColor);
+      
       setTimeout(() => setProgress(percent, 'progress-circle'), 100);
   }
+  // ===================================================================
 
   function displaySubjectAttendance(allLectures, attendedLectureIds) {
       const container = document.getElementById('subject-attendance-list');
@@ -384,7 +392,6 @@
         return;
     }
     const student = studentRes.data;
-    // Ensure currentTags is always an array, filtering out any placeholder "No Tags" value
     currentTags = student.roles ? student.roles.filter(t => t && t.toLowerCase() !== 'no tags') : [];
 
     displayProfileInfo(student, course);
@@ -414,9 +421,14 @@
       document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
       document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
     }
-    document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
+    document.getElementById('logout-btn').addEventListener('click', (e) => { 
+        e.preventDefault();
+        // Clear cookies and redirect to login page
+        document.cookie = "name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = 'index.html';
+    });
     
-    // ======== NEW EVENT LISTENERS FOR TAG MANAGEMENT ========
     const addTagBtn = document.getElementById('add-tag-btn');
     const addTagForm = document.getElementById('add-tag-form');
     const newTagInput = document.getElementById('new-tag-input');
@@ -460,7 +472,6 @@
         } else {
             addTagForm.classList.add('hidden');
             newTagInput.value = '';
-            // Reload all profile data to ensure consistency across all components
             await loadStudentProfile(); 
         }
     });
@@ -487,11 +498,9 @@
             deleteBtn.parentElement.style.opacity = '1';
             deleteBtn.disabled = false;
         } else {
-            // Reload all profile data to ensure consistency
             await loadStudentProfile();
         }
     });
-    // =======================================================
     
     await loadStudentProfile(); 
     lucide.createIcons();
