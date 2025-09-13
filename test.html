@@ -28,18 +28,6 @@
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
     }
-    /* Simple spinner animation */
-    .spinner {
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      width: 16px;
-      height: 16px;
-      animation: spin 1s ease-in-out infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -123,33 +111,25 @@
         <div class="lg:col-span-2 space-y-8">
           
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4">
-              <i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i>Roles & Tags
-            </h3>
-            <div id="roles-tags-list" class="flex flex-wrap gap-2">
-              <p class="text-sm text-gray-500">Loading tags...</p>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800">
+                    <i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i>
+                    <span>Roles & Tags</span>
+                </h3>
+                <button id="add-tag-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Add Tag</span>
+                </button>
             </div>
-            <div class="mt-4 flex items-center gap-2 border-t pt-4">
-              <input 
-                type="text" 
-                id="new-tag-input" 
-                placeholder="Enter new tag..." 
-                class="flex-grow w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out sm:text-sm"
-              >
-              <button 
-                id="add-tag-btn" 
-                class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 ease-in-out disabled:opacity-75 disabled:cursor-not-allowed"
-                style="min-width: 100px;"
-              >
-                <span class="button-content">
-                  <i data-lucide="plus" class="w-4 h-4 mr-1 inline-block"></i>
-                  <span>Add Tag</span>
-                </span>
-              </button>
+            <div id="roles-tags-list" class="flex flex-wrap gap-2 items-center">
+                <p class="text-sm text-gray-500">Loading tags...</p>
             </div>
-            <p id="tag-error-msg" class="text-red-500 text-sm mt-2 h-5"></p>
+            <div id="add-tag-form" class="hidden mt-4 flex gap-2">
+                <input type="text" id="new-tag-input" placeholder="E.g., Class Representative, NCC, etc." class="flex-grow px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm shadow-sm">
+                <button id="save-tag-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-sm shadow-sm disabled:bg-indigo-400 disabled:cursor-not-allowed">Save</button>
+                <button id="cancel-tag-btn" type="button" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 text-sm">Cancel</button>
+            </div>
           </div>
-
           <div class="bg-white rounded-lg shadow-md">
               <div class="p-6 border-b flex items-center gap-2"><i data-lucide="book-open-check" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
               <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
@@ -161,13 +141,13 @@
           </div>
 
            <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-500"></i>Field Project Details</h3>
-              <div id="field-project-details" class="space-y-3">
+             <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-500"></i>Field Project Details</h3>
+               <div id="field-project-details" class="space-y-3">
                    <div class="text-center text-gray-500 py-8">
                        <p class="font-medium">Project details not yet updated.</p>
                    </div>
-            </div>
-          </div>
+             </div>
+           </div>
 
         </div>
 
@@ -192,7 +172,6 @@
                 </div>
             </div>
           </div>
-
           <div class="bg-white rounded-lg shadow-md">
               <div class="p-6 border-b flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
               <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
@@ -218,8 +197,9 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let currentStudent = null;
-  let addTagTimeout = null;
+  // --- MODULE-SCOPED VARIABLES FOR STATE MANAGEMENT ---
+  let currentTags = [];
+  let studentId, course;
 
   // --- HELPER FUNCTIONS ---
   function getUrlParams() {
@@ -250,7 +230,7 @@
           'syba': 'SY BA', 'sybcom': 'SY BCOM', 'sybsc': 'SY BSC', 'sybms': 'SY BCOM (Management Studies)', 'sybaf': 'SY BCOM (Accounting & Finance)', 'sybfm': 'SY BCOM (Financial Markets)', 'sybsccs': 'SY BSC (Computer Science)',
           'tyba': 'TY BA', 'tybcom': 'TY BCOM', 'tybsc': 'TY BSC', 'tybms': 'TY BCOM (Management Studies)', 'tybaf': 'TY BCOM (Accounting & Finance)', 'tybfm': 'TY BCOM (Financial Markets)', 'tybsccs': 'TY BSC (Computer Science)'
       };
-      return courseMap[code] || code.toUpperCase();
+      return courseMap[code] || code.toUpperCase(); // Fallback to uppercase code
   }
   
   // --- UI UPDATE FUNCTIONS ---
@@ -265,24 +245,36 @@
       document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
   }
 
+  // =========== NEW & IMPROVED displayRolesAndTags FUNCTION ===========
   function displayRolesAndTags(tags) {
       const container = document.getElementById('roles-tags-list');
-      if (!tags || tags.length === 0 || (tags.length === 1 && tags[0] === 'No Tags')) {
+      container.innerHTML = ''; 
+
+      if (!tags || tags.length === 0) {
           container.innerHTML = `<p class="text-sm text-gray-500">No roles or tags assigned.</p>`;
           return;
       }
-      
-      container.innerHTML = '';
+
       tags.forEach(tag => {
           let colorClasses = 'bg-gray-100 text-gray-800';
           if (['NCC', 'NSS', 'Sports'].includes(tag)) colorClasses = 'bg-blue-100 text-blue-800';
           if (['Good Conduct'].includes(tag)) colorClasses = 'bg-green-100 text-green-800';
           if (['Misbehavior', 'Medically Unstable'].includes(tag)) colorClasses = 'bg-red-100 text-red-800';
           if (['Class Representative'].includes(tag)) colorClasses = 'bg-indigo-100 text-indigo-800';
-          
-          container.innerHTML += `<span class="px-3 py-1 text-sm font-semibold rounded-full ${colorClasses}">${tag}</span>`;
+
+          const tagElement = document.createElement('span');
+          tagElement.className = `group relative px-3 py-1 text-sm font-semibold rounded-full flex items-center gap-1.5 transition-all ${colorClasses}`;
+          tagElement.innerHTML = `
+              ${tag}
+              <button data-tag="${tag}" class="delete-tag-btn opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 rounded-full hover:bg-black/20 p-0.5">
+                  <i data-lucide="x" class="w-3 h-3 pointer-events-none"></i>
+              </button>
+          `;
+          container.appendChild(tagElement);
       });
+      lucide.createIcons();
   }
+  // ===================================================================
 
   function displayOverallAttendance(attendedCount, totalCount) {
       const percent = totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
@@ -296,7 +288,8 @@
       else if (percent >= 50) { status = "Warning"; statusColor = 'text-yellow-300';}
       
       statusText.textContent = status;
-      progressCircle.classList.add(statusColor);
+      statusText.className = `font-bold text-xl mt-1 ${statusColor}`;
+      progressCircle.className = `progress-ring__circle ${statusColor}`;
       setTimeout(() => setProgress(percent, 'progress-circle'), 100);
   }
 
@@ -353,104 +346,28 @@
 
   function calculateAndDisplayAcademicScore(overallAttendancePercent, tags, attendedActivitiesCount) {
     const attendanceScore = overallAttendancePercent * 0.5;
-    const validTags = tags ? tags.filter(tag => tag !== 'No Tags') : [];
+    const validTags = tags ? tags.filter(tag => tag && tag.toLowerCase() !== 'no tags') : [];
     const tagsBonus = validTags.length * 5;
     const eventBonus = attendedActivitiesCount * 2;
-    let totalScore = Math.min(100, Math.round(attendanceScore + tagsBonus + eventBonus));
+    let totalScore = attendanceScore + tagsBonus + eventBonus;
+    totalScore = Math.min(100, Math.round(totalScore));
 
     document.getElementById('academicScorePercent').textContent = `${totalScore}`;
-    document.getElementById('academic-score-breakdown').innerHTML = `
+    const breakdownContainer = document.getElementById('academic-score-breakdown');
+    breakdownContainer.innerHTML = `
         <div class="flex justify-between items-center"><span>Attendance (50%)</span><span class="font-semibold text-gray-800">${attendanceScore.toFixed(1)} pts</span></div>
         <div class="flex justify-between items-center"><span>Tags Bonus (${validTags.length} x 5)</span><span class="font-semibold text-gray-800">${tagsBonus} pts</span></div>
         <div class="flex justify-between items-center"><span>Event Bonus (${attendedActivitiesCount} x 2)</span><span class="font-semibold text-gray-800">${eventBonus} pts</span></div>
-        <div class="flex justify-between items-center border-t pt-2 mt-2"><span class="font-bold">Total Score</span><span class="font-bold text-indigo-600 text-lg">${totalScore} pts</span></div>
-    `;
+        <div class="flex justify-between items-center border-t pt-2 mt-2"><span class="font-bold">Total Score</span><span class="font-bold text-indigo-600 text-lg">${totalScore} pts</span></div>`;
     setTimeout(() => setProgress(totalScore, 'academic-score-circle'), 100);
-  }
-
-  async function addNewTag() {
-    const addTagBtn = document.getElementById('add-tag-btn');
-    const buttonContent = addTagBtn.querySelector('.button-content');
-    const newTagInput = document.getElementById('new-tag-input');
-    const errorMsg = document.getElementById('tag-error-msg');
-    const newTag = newTagInput.value.trim();
-
-    clearTimeout(addTagTimeout); // Clear any existing reset timer
-    errorMsg.textContent = ''; // Clear previous errors
-
-    if (!newTag) {
-        errorMsg.textContent = "Tag cannot be empty.";
-        addTagTimeout = setTimeout(() => { errorMsg.textContent = ''; }, 3000);
-        return;
-    }
-    if (!currentStudent) {
-        errorMsg.textContent = "Student data not loaded yet.";
-        addTagTimeout = setTimeout(() => { errorMsg.textContent = ''; }, 3000);
-        return;
-    }
-
-    // --- Set Loading State ---
-    addTagBtn.disabled = true;
-    buttonContent.innerHTML = `<div class="spinner"></div>`;
-    addTagBtn.classList.remove('bg-green-600', 'bg-red-600');
-    addTagBtn.classList.add('bg-indigo-600');
-
-    let currentTags = [...currentStudent.roles];
-    let updatedTags;
-    if (currentTags.length === 1 && currentTags[0] === 'No Tags') {
-        updatedTags = [newTag];
-    } else {
-        currentTags.push(newTag);
-        updatedTags = currentTags;
-    }
-
-    const { studentId, course } = getUrlParams();
-    const { data, error } = await supabase
-        .from(`${course}_students`)
-        .update({ roles: updatedTags })
-        .eq('id', studentId)
-        .select()
-        .single();
-    
-    // --- Define Reset State ---
-    const resetToDefault = () => {
-        buttonContent.innerHTML = `<i data-lucide="plus" class="w-4 h-4 mr-1 inline-block"></i><span>Add Tag</span>`;
-        lucide.createIcons();
-        addTagBtn.classList.remove('bg-green-600', 'bg-red-600');
-        addTagBtn.classList.add('bg-indigo-600');
-        addTagBtn.disabled = false;
-    };
-
-    if (error) {
-        console.error("Error updating tags:", error);
-        // --- Set Error State ---
-        buttonContent.innerHTML = `<i data-lucide="x" class="w-4 h-4 mr-1 inline-block"></i><span>Failed</span>`;
-        lucide.createIcons();
-        addTagBtn.classList.remove('bg-indigo-600');
-        addTagBtn.classList.add('bg-red-600');
-        errorMsg.textContent = "Failed to add tag. Please try again.";
-        addTagTimeout = setTimeout(() => {
-            resetToDefault();
-            errorMsg.textContent = '';
-        }, 3000);
-
-    } else if (data) {
-        // --- Set Success State ---
-        buttonContent.innerHTML = `<i data-lucide="check" class="w-4 h-4 mr-1 inline-block"></i><span>Added</span>`;
-        lucide.createIcons();
-        addTagBtn.classList.remove('bg-indigo-600');
-        addTagBtn.classList.add('bg-green-600');
-        
-        currentStudent = data;
-        displayRolesAndTags(currentStudent.roles);
-        newTagInput.value = '';
-        addTagTimeout = setTimeout(resetToDefault, 2000);
-    }
   }
 
   // --- MAIN DATA LOADING FUNCTION ---
   async function loadStudentProfile() {
-    const { studentId, course } = getUrlParams();
+    const urlParams = getUrlParams();
+    studentId = urlParams.studentId;
+    course = urlParams.course;
+
     if (!studentId || !course) {
         document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
         return;
@@ -466,14 +383,15 @@
         document.getElementById('profile-name').textContent = "Student Not Found";
         return;
     }
-    
-    currentStudent = studentRes.data;
-    
-    displayProfileInfo(currentStudent, course);
-    displayRolesAndTags(currentStudent.roles);
+    const student = studentRes.data;
+    // Ensure currentTags is always an array, filtering out any placeholder "No Tags" value
+    currentTags = student.roles ? student.roles.filter(t => t && t.toLowerCase() !== 'no tags') : [];
+
+    displayProfileInfo(student, course);
+    displayRolesAndTags(currentTags);
 
     const allLectures = lecturesRes.data || [];
-    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(currentStudent.id));
+    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
     const attendedLectureIds = new Set(attendedLectures.map(l => l.NO));
     
     displayOverallAttendance(attendedLectures.length, allLectures.length);
@@ -481,14 +399,14 @@
     renderItemList('recent-lectures-list', attendedLectures.sort((a,b) => b.NO - a.NO), 'lectures');
 
     const allActivities = eventsRes.data || [];
-    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(currentStudent.id));
+    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(studentId));
     renderItemList('recent-activities-list', attendedActivities.sort((a,b) => b.NO - a.NO), 'activities');
 
     const overallPercent = allLectures.length > 0 ? (attendedLectures.length / allLectures.length) * 100 : 0;
-    calculateAndDisplayAcademicScore(overallPercent, currentStudent.roles, attendedActivities.length);
+    calculateAndDisplayAcademicScore(overallPercent, currentTags, attendedActivities.length);
   }
 
-  // --- INITIALIZATION ---
+  // --- INITIALIZATION & EVENT LISTENERS ---
   document.addEventListener('DOMContentLoaded', async () => {
     const profName = getCookie("name");
     if (profName) {
@@ -498,8 +416,83 @@
     }
     document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
     
-    document.getElementById('add-tag-btn').addEventListener('click', addNewTag);
+    // ======== NEW EVENT LISTENERS FOR TAG MANAGEMENT ========
+    const addTagBtn = document.getElementById('add-tag-btn');
+    const addTagForm = document.getElementById('add-tag-form');
+    const newTagInput = document.getElementById('new-tag-input');
+    const saveTagBtn = document.getElementById('save-tag-btn');
+    const cancelTagBtn = document.getElementById('cancel-tag-btn');
+    const tagsContainer = document.getElementById('roles-tags-list');
 
+    addTagBtn.addEventListener('click', () => {
+        addTagForm.classList.remove('hidden');
+        newTagInput.focus();
+    });
+
+    cancelTagBtn.addEventListener('click', () => {
+        addTagForm.classList.add('hidden');
+        newTagInput.value = '';
+    });
+
+    saveTagBtn.addEventListener('click', async () => {
+        const newTag = newTagInput.value.trim();
+        if (!newTag) {
+            alert("Tag cannot be empty.");
+            return;
+        }
+        if (currentTags.map(t => t.toLowerCase()).includes(newTag.toLowerCase())) {
+            alert("This tag already exists.");
+            return;
+        }
+        const updatedTags = [...currentTags, newTag];
+        
+        saveTagBtn.disabled = true;
+        saveTagBtn.textContent = 'Saving...';
+
+        const { error } = await supabase.from(`${course}_students`).update({ roles: updatedTags }).eq('id', studentId);
+
+        saveTagBtn.disabled = false;
+        saveTagBtn.textContent = 'Save';
+
+        if (error) {
+            console.error('Error updating tags:', error);
+            alert('Failed to add tag. Please try again.');
+        } else {
+            addTagForm.classList.add('hidden');
+            newTagInput.value = '';
+            // Reload all profile data to ensure consistency across all components
+            await loadStudentProfile(); 
+        }
+    });
+
+    tagsContainer.addEventListener('click', async (e) => {
+        const deleteBtn = e.target.closest('.delete-tag-btn');
+        if (!deleteBtn) return;
+
+        const tagToDelete = deleteBtn.dataset.tag;
+        if (!confirm(`Are you sure you want to delete the tag "${tagToDelete}"?`)) {
+            return;
+        }
+
+        const updatedTags = currentTags.filter(tag => tag !== tagToDelete);
+        
+        deleteBtn.parentElement.style.opacity = '0.5';
+        deleteBtn.disabled = true;
+
+        const { error } = await supabase.from(`${course}_students`).update({ roles: updatedTags }).eq('id', studentId);
+        
+        if (error) {
+            console.error('Error deleting tag:', error);
+            alert('Failed to delete tag. Please try again.');
+            deleteBtn.parentElement.style.opacity = '1';
+            deleteBtn.disabled = false;
+        } else {
+            // Reload all profile data to ensure consistency
+            await loadStudentProfile();
+        }
+    });
+    // =======================================================
+    
     await loadStudentProfile(); 
     lucide.createIcons();
   });
