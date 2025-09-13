@@ -111,10 +111,28 @@
         <div class="lg:col-span-2 space-y-8">
           
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i>Roles & Tags</h3>
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4">
+              <i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i>Roles & Tags
+            </h3>
             <div id="roles-tags-list" class="flex flex-wrap gap-2">
-              <p class="text-sm text-gray-500">No roles or tags assigned.</p>
+              <p class="text-sm text-gray-500">Loading tags...</p>
             </div>
+            <div class="mt-4 flex items-center gap-2 border-t pt-4">
+              <input 
+                type="text" 
+                id="new-tag-input" 
+                placeholder="Enter new tag..." 
+                class="flex-grow w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out sm:text-sm"
+              >
+              <button 
+                id="add-tag-btn" 
+                class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
+                <span>Add Tag</span>
+              </button>
+            </div>
+            <p id="tag-error-msg" class="text-red-500 text-sm mt-2 hidden"></p>
           </div>
 
           <div class="bg-white rounded-lg shadow-md">
@@ -159,6 +177,7 @@
                 </div>
             </div>
           </div>
+
           <div class="bg-white rounded-lg shadow-md">
               <div class="p-6 border-b flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
               <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
@@ -183,6 +202,8 @@
   const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentStudent = null;
 
   // --- HELPER FUNCTIONS ---
   function getUrlParams() {
@@ -213,7 +234,7 @@
           'syba': 'SY BA', 'sybcom': 'SY BCOM', 'sybsc': 'SY BSC', 'sybms': 'SY BCOM (Management Studies)', 'sybaf': 'SY BCOM (Accounting & Finance)', 'sybfm': 'SY BCOM (Financial Markets)', 'sybsccs': 'SY BSC (Computer Science)',
           'tyba': 'TY BA', 'tybcom': 'TY BCOM', 'tybsc': 'TY BSC', 'tybms': 'TY BCOM (Management Studies)', 'tybaf': 'TY BCOM (Accounting & Finance)', 'tybfm': 'TY BCOM (Financial Markets)', 'tybsccs': 'TY BSC (Computer Science)'
       };
-      return courseMap[code] || code.toUpperCase(); // Fallback to uppercase code
+      return courseMap[code] || code.toUpperCase();
   }
   
   // --- UI UPDATE FUNCTIONS ---
@@ -314,43 +335,74 @@
       });
   }
 
-  // --- NEW ACADEMIC SCORE FUNCTION ---
   function calculateAndDisplayAcademicScore(overallAttendancePercent, tags, attendedActivitiesCount) {
     const attendanceScore = overallAttendancePercent * 0.5;
-
-    // Filter out "No Tags" before counting
     const validTags = tags ? tags.filter(tag => tag !== 'No Tags') : [];
     const tagsBonus = validTags.length * 5;
-
     const eventBonus = attendedActivitiesCount * 2;
+    let totalScore = Math.min(100, Math.round(attendanceScore + tagsBonus + eventBonus));
 
-    let totalScore = attendanceScore + tagsBonus + eventBonus;
-    // Cap the total score at 100
-    totalScore = Math.min(100, Math.round(totalScore));
-
-    // Update the UI
     document.getElementById('academicScorePercent').textContent = `${totalScore}`;
-
-    const breakdownContainer = document.getElementById('academic-score-breakdown');
-    breakdownContainer.innerHTML = `
-        <div class="flex justify-between items-center">
-            <span>Attendance (50%)</span>
-            <span class="font-semibold text-gray-800">${attendanceScore.toFixed(1)} pts</span>
-        </div>
-        <div class="flex justify-between items-center">
-            <span>Tags Bonus (${validTags.length} x 5)</span>
-            <span class="font-semibold text-gray-800">${tagsBonus} pts</span>
-        </div>
-        <div class="flex justify-between items-center">
-            <span>Event Bonus (${attendedActivitiesCount} x 2)</span>
-            <span class="font-semibold text-gray-800">${eventBonus} pts</span>
-        </div>
-        <div class="flex justify-between items-center border-t pt-2 mt-2">
-            <span class="font-bold">Total Score</span>
-            <span class="font-bold text-indigo-600 text-lg">${totalScore} pts</span>
-        </div>
+    document.getElementById('academic-score-breakdown').innerHTML = `
+        <div class="flex justify-between items-center"><span>Attendance (50%)</span><span class="font-semibold text-gray-800">${attendanceScore.toFixed(1)} pts</span></div>
+        <div class="flex justify-between items-center"><span>Tags Bonus (${validTags.length} x 5)</span><span class="font-semibold text-gray-800">${tagsBonus} pts</span></div>
+        <div class="flex justify-between items-center"><span>Event Bonus (${attendedActivitiesCount} x 2)</span><span class="font-semibold text-gray-800">${eventBonus} pts</span></div>
+        <div class="flex justify-between items-center border-t pt-2 mt-2"><span class="font-bold">Total Score</span><span class="font-bold text-indigo-600 text-lg">${totalScore} pts</span></div>
     `;
     setTimeout(() => setProgress(totalScore, 'academic-score-circle'), 100);
+  }
+
+  async function addNewTag() {
+    const addTagBtn = document.getElementById('add-tag-btn');
+    const newTagInput = document.getElementById('new-tag-input');
+    const errorMsg = document.getElementById('tag-error-msg');
+    const newTag = newTagInput.value.trim();
+
+    if (!newTag) {
+        errorMsg.textContent = "Tag cannot be empty.";
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+    if (!currentStudent) {
+        errorMsg.textContent = "Student data not loaded yet.";
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+    errorMsg.classList.add('hidden');
+
+    addTagBtn.disabled = true;
+    addTagBtn.querySelector('span').textContent = 'Adding...';
+
+    let currentTags = [...currentStudent.roles];
+    let updatedTags;
+    if (currentTags.length === 1 && currentTags[0] === 'No Tags') {
+        updatedTags = [newTag];
+    } else {
+        currentTags.push(newTag);
+        updatedTags = currentTags;
+    }
+
+    const { studentId, course } = getUrlParams();
+    const { data, error } = await supabase
+        .from(`${course}_students`)
+        .update({ roles: updatedTags })
+        .eq('id', studentId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Error updating tags:", error);
+        errorMsg.textContent = "Failed to add tag. Please try again.";
+        errorMsg.classList.remove('hidden');
+    } else if (data) {
+        console.log("Tag added successfully:", data);
+        currentStudent = data;
+        displayRolesAndTags(currentStudent.roles);
+        newTagInput.value = '';
+    }
+
+    addTagBtn.disabled = false;
+    addTagBtn.querySelector('span').textContent = 'Add Tag';
   }
 
   // --- MAIN DATA LOADING FUNCTION ---
@@ -371,12 +423,14 @@
         document.getElementById('profile-name').textContent = "Student Not Found";
         return;
     }
-    const student = studentRes.data;
-    displayProfileInfo(student, course);
-    displayRolesAndTags(student.roles);
+    
+    currentStudent = studentRes.data;
+    
+    displayProfileInfo(currentStudent, course);
+    displayRolesAndTags(currentStudent.roles);
 
     const allLectures = lecturesRes.data || [];
-    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
+    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(currentStudent.id));
     const attendedLectureIds = new Set(attendedLectures.map(l => l.NO));
     
     displayOverallAttendance(attendedLectures.length, allLectures.length);
@@ -384,12 +438,11 @@
     renderItemList('recent-lectures-list', attendedLectures.sort((a,b) => b.NO - a.NO), 'lectures');
 
     const allActivities = eventsRes.data || [];
-    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(studentId));
+    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(currentStudent.id));
     renderItemList('recent-activities-list', attendedActivities.sort((a,b) => b.NO - a.NO), 'activities');
 
-    // --- Calculate and Display Academic Score ---
     const overallPercent = allLectures.length > 0 ? (attendedLectures.length / allLectures.length) * 100 : 0;
-    calculateAndDisplayAcademicScore(overallPercent, student.roles, attendedActivities.length);
+    calculateAndDisplayAcademicScore(overallPercent, currentStudent.roles, attendedActivities.length);
   }
 
   // --- INITIALIZATION ---
@@ -402,8 +455,10 @@
     }
     document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); /* Logout logic */ });
     
+    document.getElementById('add-tag-btn').addEventListener('click', addNewTag);
+
     await loadStudentProfile(); 
-    lucide.createIcons(); // Render icons after all content is on the page
+    lucide.createIcons();
   });
 </script>
 
