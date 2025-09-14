@@ -95,12 +95,11 @@
                 <th class="p-4 font-semibold text-gray-600">ID</th>
                 <th class="p-4 font-semibold text-gray-600">Student Name</th>
                 <th class="p-4 font-semibold text-gray-600">Academic Score</th>
-                <th class="p-4 font-semibold text-gray-600">Mentor Name</th>
                 <th class="p-4 font-semibold text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody id="student-table-body">
-              <tr><td colspan="5" class="p-8 text-center text-gray-500">Calculating scores and generating blacklist...</td></tr>
+              <tr><td colspan="4" class="p-8 text-center text-gray-500">Calculating scores and generating blacklist...</td></tr>
             </tbody>
           </table>
         </div>
@@ -139,7 +138,8 @@ async function renderBlacklistTable() {
   try {
     // 1. Fetch all necessary data in parallel
     const [studentsRes, lecturesRes, eventsRes] = await Promise.all([
-      supabaseClient.from(`${course}_students`).select("id, name, roles, mentor_name"),
+      // "mentor_name" removed from select query
+      supabaseClient.from(`${course}_students`).select("id, name, roles"),
       supabaseClient.from(`${course}_lectures`).select("attendees"),
       supabaseClient.from(`${course}_events`).select("attendees")
     ]);
@@ -159,17 +159,13 @@ async function renderBlacklistTable() {
     for (const student of allStudents) {
       const studentId = student.id.toString();
 
-      // Attendance Calculation
       const attendedLecturesCount = allLectures.filter(l => l.attendees?.includes(studentId)).length;
       const attendancePercent = totalLecturesCount > 0 ? (attendedLecturesCount / totalLecturesCount) * 100 : 0;
       
-      // Event Participation Calculation
       const attendedActivitiesCount = allEvents.filter(e => e.attendees?.includes(studentId)).length;
       
-      // Roles/Tags Calculation
       const validTags = student.roles ? student.roles.filter(tag => tag && tag.toLowerCase() !== 'no tags') : [];
       
-      // Academic Score Formula
       const attendanceScore = attendancePercent * 0.5;
       const tagsBonus = validTags.length * 5;
       const eventBonus = attendedActivitiesCount * 2;
@@ -184,7 +180,8 @@ async function renderBlacklistTable() {
     // 4. Render the table
     tableBody.innerHTML = ""; // Clear loading message
     if (blacklistedStudents.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">🎉 No students are currently blacklisted.</td></tr>`;
+      // Colspan is now 4
+      tableBody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">🎉 No students are currently blacklisted.</td></tr>`;
       return;
     }
 
@@ -196,7 +193,6 @@ async function renderBlacklistTable() {
           <td class="p-4 text-sm text-gray-700">${student.id}</td>
           <td class="p-4 font-medium text-gray-900">${student.name}</td>
           <td class="p-4 font-bold text-red-600">${student.score} / 100</td>
-          <td class="p-4 text-sm text-gray-700">${student.mentor_name || 'N/A'}</td>
           <td class="p-4"><a href="studentprofile.html?id=${student.id}&course=${course}" class="text-indigo-600 hover:underline text-sm font-medium">View Details</a></td>
         </tr>`;
       tableBody.insertAdjacentHTML("beforeend", rowHTML);
@@ -204,13 +200,13 @@ async function renderBlacklistTable() {
 
   } catch (error) {
     console.error("Error generating blacklist:", error);
-    tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-600">Failed to load blacklist. ${error.message}</td></tr>`;
+    // Colspan is now 4
+    tableBody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-600">Failed to load blacklist. ${error.message}</td></tr>`;
   }
 }
 
 // ====== Page Initialization ======
 document.addEventListener("DOMContentLoaded", () => {
-  // Basic page setup
   document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
   const profName = getCookie("name");
   if (profName) {
@@ -225,7 +221,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "adminlogin.html";
   });
 
-  // Render the main content
   renderBlacklistTable();
   lucide.createIcons();
 });
