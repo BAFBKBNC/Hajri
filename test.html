@@ -1,340 +1,552 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Report - ClassCount</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --light-gray: #f3f4f6;
-            --medium-gray: #d1d5db;
-            --dark-gray: #374151;
-            --text-color: #1f2937;
-            --text-light: #6b7280;
-            --white: #ffffff;
-            --green-accent: #10b981;
-            --border-radius: 0.75rem;
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile - ClassCount</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--light-gray);
-            color: var(--text-color);
-        }
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            background: var(--white);
-            color: var(--primary-color);
-            padding: 1rem 1.5rem;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--medium-gray);
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.75rem;
-            font-weight: 700;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .header-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--medium-gray);
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--text-light);
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        .header-btn:hover {
-            background-color: var(--light-gray);
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .logout-btn { margin-left: auto; }
-        main {
-            flex-grow: 1;
-            padding: 1.5rem;
-            max-width: 900px;
-            width: 100%;
-            margin: 2rem auto;
-        }
-        .download-card {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-        .card-header {
-            border-bottom: 1px solid var(--medium-gray);
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--dark-gray);
-            margin-bottom: 0.25rem;
-        }
-        .course-detail {
-            font-size: 1rem;
-            color: var(--text-light);
-            font-weight: 500;
-        }
-        .selector-container {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        .selector-group {
-            flex: 1;
-        }
-        .selector-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
-        .selector-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--medium-gray);
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: var(--light-gray);
-            transition: border-color .2s ease, box-shadow .2s ease;
-        }
-        .selector-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
-        }
-        .download-btn {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            background-color: var(--primary-color);
-            color: var(--white);
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: background-color .2s ease;
-            border: none;
-            cursor: pointer;
-        }
-        .download-btn:hover {
-            background-color: var(--primary-hover);
-        }
-        .status-message {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-light);
-            font-weight: 500;
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-    </style>
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .header-gradient { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
+    .profile-header-card { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.6s ease-out;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800">
 
-<div class="app-container">
-    <header>
-        <a href="index.html" class="header-btn back-btn">← Back</a>
-        <h1>ClassCount</h1>
-        <a href="#" id="logout-btn" class="header-btn logout-btn">Logout</a>
+<div class="flex min-h-screen">
+  <div class="hidden md:flex flex-col w-64 bg-gray-900 text-gray-200 shadow-xl">
+    <div class="flex items-center justify-center h-20 header-gradient text-white">
+      <i data-lucide="graduation-cap" class="h-8 w-8 mr-3"></i>
+      <span class="text-2xl font-bold">ClassCount</span>
+    </div>
+    <nav class="flex flex-col flex-grow p-4">
+      <a href="dashboard.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <i data-lucide="layout-dashboard" class="h-5 w-5 mr-3"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="students.html" class="flex items-center px-4 py-3 mt-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-md">
+        <i data-lucide="users" class="h-5 w-5 mr-3"></i>
+        <span>Students</span>
+      </a>
+      <a href="lectures.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <i data-lucide="book-open" class="h-5 w-5 mr-3"></i>
+        <span>Lectures</span>
+      </a>
+      <a href="activities.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <i data-lucide="puzzle" class="h-5 w-5 mr-3"></i>
+        <span>Activities</span>
+      </a>
+      <a href="changepassword.html" class="flex items-center px-4 py-3 mt-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200">
+        <i data-lucide="key-round" class="h-5 w-5 mr-3"></i>
+        <span>Change Password</span>
+      </a>
+      <a href="#" id="logout-btn" class="flex items-center px-4 py-3 mt-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200">
+        <i data-lucide="log-out" class="h-5 w-5 mr-3"></i>
+        <span>Logout</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="flex flex-col flex-1 overflow-y-auto">
+    <header class="flex items-center justify-between h-20 px-4 sm:px-8 bg-white border-b shadow-sm sticky top-0 z-10">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Student Profile</h1>
+      <div class="flex items-center space-x-4">
+        <div class="text-sm text-gray-600 text-right">
+          <p id="prof-name" class="font-semibold">Prof. ...</p>
+        </div>
+        <div id="prof-initial" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold border-2 border-indigo-300">?</div>
+      </div>
     </header>
-    <main id="main-content">
-        </main>
+
+    <main class="p-4 sm:p-8">
+        <div class="profile-header-card text-white p-6 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <div id="profile-initial-main" class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 text-white flex-shrink-0 flex items-center justify-center text-5xl font-bold border-4 border-white/50">?</div>
+                <div>
+                    <h2 id="profile-name" class="text-3xl font-bold">Loading...</h2>
+                    <p id="profile-course-year" class="text-indigo-200 font-medium mt-1"></p>
+                    <p class="text-sm text-indigo-200 mt-2">Mentor: <span id="profile-mentor" class="font-semibold"></span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-center">
+                <div class="relative w-28 h-28">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-white/20" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                        <circle id="progress-circle" class="progress-ring__circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="attendancePercent" class="text-2xl font-bold">--%</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-lg font-semibold">Overall Attendance</p>
+                    <p id="attendanceStatusText" class="font-bold text-xl mt-1">--</p>
+                </div>
+            </div>
+        </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800"><i data-lucide="tags" class="w-5 h-5 text-indigo-500"></i><span>Roles & Tags</span></h3>
+              <button id="add-tag-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"><i data-lucide="plus-circle" class="w-4 h-4"></i><span>Add Tag</span></button>
+            </div>
+            <div id="roles-tags-list" class="flex flex-wrap gap-2 items-center"><p class="text-sm text-gray-500">Loading tags...</p></div>
+            <div id="add-tag-form" class="hidden mt-4 flex gap-2">
+              <input type="text" id="new-tag-input" placeholder="E.g., Class Representative, NCC, etc." class="flex-grow px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm shadow-sm">
+              <button id="save-tag-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-sm shadow-sm disabled:bg-indigo-400 disabled:cursor-not-allowed">Save</button>
+              <button id="cancel-tag-btn" type="button" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 text-sm">Cancel</button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b flex items-center gap-2"><i data-lucide="book-open-check" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Recently Attended Lectures</h3></div>
+            <div id="recent-lectures-list" class="divide-y divide-gray-100"></div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b flex items-center gap-2"><i data-lucide="award" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Co-curricular Activities</h3></div>
+            <div id="recent-activities-list" class="divide-y divide-gray-100"></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-lg shadow-md">
+             <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-500"></i>Field Project Details</h3>
+             <div id="field-project-details" class="space-y-4">
+                 <div class="text-center text-gray-500 py-8">
+                     <p class="font-medium">Loading project details...</p>
+                 </div>
+             </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-8">
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="award" class="w-5 h-5 text-indigo-500"></i>Academic Score</h3>
+            <div class="flex flex-col items-center gap-4">
+              <div class="relative w-32 h-32">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                  <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                  <circle id="academic-score-circle" class="progress-ring__circle text-indigo-600" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="stroke-dasharray: 282.743, 282.743; stroke-dashoffset: 282.743;"></circle>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center"><span id="academicScorePercent" class="text-3xl font-bold text-gray-800">--</span></div>
+              </div>
+              <div id="academic-score-breakdown" class="w-full text-sm text-gray-600 space-y-2 mt-2"><p class="text-center text-gray-500">Calculating score...</p></div>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i><h3 class="text-xl font-semibold text-gray-800">Subject-wise Attendance</h3></div>
+            <div class="overflow-x-auto p-2"><table class="w-full text-left"><tbody id="subject-attendance-list"></tbody></table></div>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-4"><i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-500"></i>Weekly Test Insights</h3>
+            <div class="text-center text-gray-500 py-8"><p class="font-medium">No insights available currently.</p></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  // --- SUPABASE CLIENTS ---
+  // Client for ClassCount (Academic Data)
+  const ACADEMIC_SUPABASE_URL = "https://pwgdubtbvqnmivtupbvx.supabase.co";
+  const ACADEMIC_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3Z2R1YnRidnFubWl2dHVwYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTUzMTAsImV4cCI6MjA3MDY3MTMxMH0.kCn6JMv0kTQrkoJ7OmaxCbwZNzewRNtuOg-35nYXYXg";
+  const supabaseAcademic = createClient(ACADEMIC_SUPABASE_URL, ACADEMIC_SUPABASE_KEY);
 
-    // --- Global variable to store lecture data ---
-    let allLectures = [];
+  // Client for Field Project Data
+  const PROJECT_SUPABASE_URL = 'https://fuovcuzaxfkyqrridrgy.supabase.co';
+  const PROJECT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1b3ZjdXpheGZreXFycmlkcmd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NzIyMjAsImV4cCI6MjA2MTA0ODIyMH0._PkkfWXcn4j6cjBh-yLJjDevrmhuxKxVbcdQUSgCsSk';
+  const supabaseProject = createClient(PROJECT_SUPABASE_URL, PROJECT_SUPABASE_KEY);
 
-    // --- DOM Elements ---
-    const mainContent = document.getElementById('main-content');
-    const logoutBtn = document.getElementById('logout-btn');
 
-    // --- Helper Functions ---
-    function getCourse() {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; course=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
+  let currentTags = [];
+  let studentId, course;
+
+  // --- HELPER FUNCTIONS ---
+  function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return { studentId: params.get("id"), course: params.get("course") };
+  }
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
+  function setProgress(percent, circleId) {
+    const circle = document.getElementById(circleId);
+    if (!circle) return;
+    const radius = circle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const clampedPercent = Math.max(0, Math.min(100, percent));
+    const offset = circumference - (clampedPercent / 100) * circumference;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = offset;
+  }
+  function getFullCourseName(courseCode = '') {
+      const code = courseCode.toLowerCase();
+      const courseMap = {
+          'fyba': 'FY BA', 'fybcom': 'FY BCOM', 'fybsc': 'FY BSC', 'fybms': 'FY BCOM (Management Studies)', 'fybaf': 'FY BCOM (Accounting & Finance)', 'fybfm': 'FY BCOM (Financial Markets)', 'fybsccs': 'FY BSC (Computer Science)',
+          'syba': 'SY BA', 'sybcom': 'SY BCOM', 'sybsc': 'SY BSC', 'sybms': 'SY BCOM (Management Studies)', 'sybaf': 'SY BCOM (Accounting & Finance)', 'sybfm': 'SY BCOM (Financial Markets)', 'sybsccs': 'SY BSC (Computer Science)',
+          'tyba': 'TY BA', 'tybcom': 'TY BCOM', 'tybsc': 'TY BSC', 'tybms': 'TY BCOM (Management Studies)', 'tybaf': 'TY BCOM (Accounting & Finance)', 'tybfm': 'TY BCOM (Financial Markets)', 'tybsccs': 'TY BSC (Computer Science)'
+      };
+      return courseMap[code] || code.toUpperCase();
+  }
+  
+  // --- UI UPDATE FUNCTIONS ---
+  // (Existing UI functions like displayProfileInfo, displayRolesAndTags, etc. remain here)
+    function displayProfileInfo(student, courseCode) {
+        const studentName = student.name || 'N/A';
+        document.getElementById('profile-initial-main').textContent = studentName.charAt(0).toUpperCase();
+        document.getElementById('profile-name').textContent = studentName;
+        const year = courseCode.substring(0, 2).toUpperCase();
+        const fullCourseName = getFullCourseName(courseCode);
+        document.getElementById('profile-course-year').textContent = `${fullCourseName} - ${year}`;
+        document.getElementById('profile-mentor').textContent = student.mentor_name || 'Not Assigned';
     }
+    function displayRolesAndTags(tags) {
+        const container = document.getElementById('roles-tags-list');
+        container.innerHTML = ''; 
+        if (!tags || tags.length === 0) {
+            container.innerHTML = `<p class="text-sm text-gray-500">No roles or tags assigned.</p>`;
+            return;
+        }
+        tags.forEach(tag => {
+            let colorClasses = 'bg-gray-100 text-gray-800';
+            if (['NCC', 'NSS', 'Sports'].includes(tag)) colorClasses = 'bg-blue-100 text-blue-800';
+            if (['Good Conduct'].includes(tag)) colorClasses = 'bg-green-100 text-green-800';
+            if (['Misbehavior', 'Medically Unstable'].includes(tag)) colorClasses = 'bg-red-100 text-red-800';
+            if (['Class Representative'].includes(tag)) colorClasses = 'bg-indigo-100 text-indigo-800';
 
-    function showStatusMessage(message) {
-        mainContent.innerHTML = `<div class="status-message">${message}</div>`;
-    }
-
-    function renderUI(course, lectures) {
-        const downloadCard = document.createElement('div');
-        downloadCard.className = 'download-card';
-
-        let optionsHtml = '';
-        lectures.forEach(lec => {
-            optionsHtml += `<option value="${lec.NO}">${lec.NO} - ${lec.LECTURE}</option>`;
+            const tagElement = document.createElement('span');
+            tagElement.className = `group relative px-3 py-1 text-sm font-semibold rounded-full flex items-center gap-1.5 transition-all ${colorClasses}`;
+            tagElement.innerHTML = `
+                ${tag}
+                <button data-tag="${tag}" class="delete-tag-btn opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 rounded-full hover:bg-black/20 p-0.5">
+                    <i data-lucide="x" class="w-3 h-3 pointer-events-none"></i>
+                </button>
+            `;
+            container.appendChild(tagElement);
         });
+        lucide.createIcons();
+    }
+    function displayOverallAttendance(attendedCount, totalCount) {
+        const percent = totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
+        document.getElementById('attendancePercent').textContent = `${percent}%`;
+        const statusText = document.getElementById('attendanceStatusText');
+        const progressCircle = document.getElementById('progress-circle');
+        
+        let status = "Danger";
+        let statusColor = 'text-red-300';
+        if (percent >= 75) { status = "Safe"; statusColor = 'text-green-300'; } 
+        else if (percent >= 50) { status = "Warning"; statusColor = 'text-yellow-300';}
+        
+        statusText.textContent = status;
+        statusText.classList.remove('text-red-300', 'text-yellow-300', 'text-green-300');
+        progressCircle.classList.remove('text-red-300', 'text-yellow-300', 'text-green-300');
+        statusText.classList.add(statusColor);
+        progressCircle.classList.add(statusColor);
+        
+        setTimeout(() => setProgress(percent, 'progress-circle'), 100);
+    }
+    function displaySubjectAttendance(allLectures, attendedLectureIds) {
+        const container = document.getElementById('subject-attendance-list');
+        if(allLectures.length === 0) {
+          container.innerHTML = `<tr><td class="p-4 text-center text-gray-500">No lecture data available.</td></tr>`;
+          return;
+        };
+        container.innerHTML = '';
+        const subjectStats = allLectures.reduce((acc, lecture) => {
+            const name = lecture.LECTURE;
+            if (!acc[name]) acc[name] = { total: 0, attended: 0 };
+            acc[name].total++;
+            if (attendedLectureIds.has(lecture.NO)) acc[name].attended++;
+            return acc;
+        }, {});
 
-        downloadCard.innerHTML = `
-            <div class="card-header">
-                <h2 class="card-title">Generate Lecture Report</h2>
-                <p class="course-detail" id="course-name">Course: <strong>${course.toUpperCase()}</strong></p>
-            </div>
-            <div class="selector-container">
-                <div class="selector-group">
-                    <label for="start-lec">From Lecture No:</label>
-                    <select id="start-lec">${optionsHtml}</select>
+        Object.entries(subjectStats).forEach(([subject, stats]) => {
+            const percent = stats.total > 0 ? Math.round((stats.attended / stats.total) * 100) : 0;
+            let color = percent >= 75 ? 'bg-green-500' : percent >= 50 ? 'bg-orange-500' : 'bg-red-500';
+            
+            container.innerHTML += `
+                <tr class="border-b border-gray-100 last:border-b-0">
+                    <td class="p-3 font-medium text-gray-800">${subject}</td>
+                    <td class="p-3 w-1/4">
+                        <div class="w-full bg-gray-200 rounded-full h-2"><div class="${color} h-2 rounded-full" style="width: ${percent}%"></div></div>
+                    </td>
+                    <td class="p-3 font-bold text-gray-700 w-16 text-right">${percent}%</td>
+                </tr>
+            `;
+        });
+    }
+    function renderItemList(containerId, items, type) {
+        const container = document.getElementById(containerId);
+        if (!items || items.length === 0) {
+            container.innerHTML = `<p class="p-6 text-center text-gray-500">No recent ${type} found.</p>`;
+            return;
+        }
+        container.innerHTML = '';
+        items.slice(0, 5).forEach(item => {
+            container.innerHTML += `
+                <div class="flex items-center justify-between p-4 hover:bg-gray-50">
+                    <div>
+                        <p class="font-semibold text-gray-900">${type === 'lectures' ? item.LECTURE : item.EVENTS}</p>
+                        <p class="text-sm text-gray-500">${item.DATE} at ${item.TIME}</p>
+                    </div>
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>
                 </div>
-                <div class="selector-group">
-                    <label for="end-lec">To Lecture No:</label>
-                    <select id="end-lec">${optionsHtml}</select>
-                </div>
+            `;
+        });
+    }
+    function calculateAndDisplayAcademicScore(overallAttendancePercent, tags, attendedActivitiesCount) {
+        const attendanceScore = overallAttendancePercent * 0.5;
+        const validTags = tags ? tags.filter(tag => tag && tag.toLowerCase() !== 'no tags') : [];
+        const tagsBonus = validTags.length * 5;
+        const eventBonus = attendedActivitiesCount * 2;
+        let totalScore = attendanceScore + tagsBonus + eventBonus;
+        totalScore = Math.min(100, Math.round(totalScore));
+
+        document.getElementById('academicScorePercent').textContent = `${totalScore}`;
+        const breakdownContainer = document.getElementById('academic-score-breakdown');
+        breakdownContainer.innerHTML = `
+            <div class="flex justify-between items-center"><span>Attendance (50%)</span><span class="font-semibold text-gray-800">${attendanceScore.toFixed(1)} pts</span></div>
+            <div class="flex justify-between items-center"><span>Tags Bonus (${validTags.length} x 5)</span><span class="font-semibold text-gray-800">${tagsBonus} pts</span></div>
+            <div class="flex justify-between items-center"><span>Event Bonus (${attendedActivitiesCount} x 2)</span><span class="font-semibold text-gray-800">${eventBonus} pts</span></div>
+            <div class="flex justify-between items-center border-t pt-2 mt-2"><span class="font-bold">Total Score</span><span class="font-bold text-indigo-600 text-lg">${totalScore} pts</span></div>`;
+        setTimeout(() => setProgress(totalScore, 'academic-score-circle'), 100);
+    }
+    
+  // --- NEW FIELD PROJECT FUNCTIONS ---
+  async function displayFieldProjectDetails(data) {
+    const container = document.getElementById('field-project-details');
+    
+    const teamMembersHTML = data.teamMembers.map(member => 
+      `<span class="text-sm bg-gray-100 text-gray-700 px-2 py-1 rounded-md">${member.students.name}</span>`
+    ).join('');
+
+    let fileStatusHTML = '';
+    if (data.fileInfo) {
+      const { data: urlData } = supabaseProject.storage.from('FP').getPublicUrl(data.fileInfo.file_path);
+      const uploaderName = data.fileInfo.students ? data.fileInfo.students.name : 'N/A';
+      const uploadDate = new Date(data.fileInfo.uploaded_at).toLocaleDateString();
+
+      fileStatusHTML = `
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="font-bold text-green-800">File Submitted</p>
+              <p class="text-sm text-green-700 mt-1">By <strong>${uploaderName}</strong> on ${uploadDate}</p>
             </div>
-            <button id="download-btn" class="download-btn">Download PDF</button>
-        `;
-
-        mainContent.innerHTML = '';
-        mainContent.appendChild(downloadCard);
-
-        // Set default end lecture to the last one
-        document.getElementById('end-lec').value = lectures[lectures.length - 1].NO;
-
-        // Add event listener for the download button
-        document.getElementById('download-btn').addEventListener('click', generatePdf);
+            <a href="${urlData.publicUrl}" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm">
+              <i data-lucide="download-cloud" class="w-4 h-4"></i>
+              <span>Download</span>
+            </a>
+          </div>
+        </div>
+      `;
+    } else {
+      fileStatusHTML = `
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+          <p class="font-bold text-yellow-800">File Not Submitted Yet</p>
+          <p class="text-sm text-yellow-700 mt-1">The project file has not been uploaded by the group.</p>
+        </div>
+      `;
     }
 
-    // --- Data Loading Function ---
-    async function loadLectures(course) {
-        showStatusMessage('Loading lecture data...');
+    container.innerHTML = `
+      <div>
+        <h4 class="font-semibold text-gray-600">Project Title</h4>
+        <p class="text-gray-800">${data.title}</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-600">Team Members</h4>
+        <div class="flex flex-wrap gap-2 mt-1">${teamMembersHTML}</div>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-600">Submission Status</h4>
+        ${fileStatusHTML}
+      </div>
+    `;
+    lucide.createIcons();
+  }
 
-        const tableName = `${course}_lectures`;
-        const { data, error } = await supabase
-            .from(tableName)
-            .select("NO, LECTURE, DATE, TIME, attendees")
-            .order("NO", { ascending: true });
+  async function loadFieldProjectDetails(studentId) {
+      const container = document.getElementById('field-project-details');
+      try {
+        const { data: assignment, error: assignError } = await supabaseProject.from('projectassignments').select('topicid').eq('studentid', studentId).single();
+
+        if (assignError || !assignment) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">This student is not assigned to a field project.</p>';
+            return;
+        }
+        const { topicid } = assignment;
+
+        const [topicRes, teamRes, fileRes] = await Promise.all([
+            supabaseProject.from('topics').select('topicname').eq('topicid', topicid).single(),
+            supabaseProject.from('projectassignments').select('students(name)').eq('topicid', topicid),
+            supabaseProject.from('project_files').select('file_path, uploaded_at, students(name)').eq('topic_id', topicid).single()
+        ]);
+        
+        if (topicRes.error) throw topicRes.error;
+        if (teamRes.error) throw teamRes.error;
+
+        const projectData = {
+          title: topicRes.data.topicname,
+          teamMembers: teamRes.data,
+          fileInfo: fileRes.data // This will be null if no file is found, which is expected
+        };
+
+        displayFieldProjectDetails(projectData);
+
+      } catch (error) {
+        console.error("Error fetching field project details:", error);
+        container.innerHTML = '<p class="text-center text-red-500 py-8">Could not load project details.</p>';
+      }
+  }
+
+  // --- MAIN DATA LOADING FUNCTION ---
+  async function loadStudentProfile() {
+    const urlParams = getUrlParams();
+    studentId = urlParams.studentId;
+    course = urlParams.course;
+
+    if (!studentId || !course) {
+      document.body.innerHTML = `<div class="h-screen w-full flex items-center justify-center text-center"><div><h1 class="text-2xl font-bold">Error</h1><p class="text-gray-600">Student ID or Course not provided in URL.</p></div></div>`;
+      return;
+    }
+    // Fetch academic and project data in parallel
+    const [studentRes, lecturesRes, eventsRes, _] = await Promise.all([
+        supabaseAcademic.from(`${course}_students`).select('*, roles').eq('id', studentId).single(),
+        supabaseAcademic.from(`${course}_lectures`).select('NO, LECTURE, DATE, TIME, attendees'),
+        supabaseAcademic.from(`${course}_events`).select('NO, EVENTS, DATE, TIME, attendees'),
+        loadFieldProjectDetails(studentId) // Load project details
+    ]);
+
+    if (studentRes.error || !studentRes.data) {
+      console.error("Student not found:", studentRes.error);
+      document.getElementById('profile-name').textContent = "Student Not Found";
+      return;
+    }
+    const student = studentRes.data;
+    currentTags = student.roles ? student.roles.filter(t => t && t.toLowerCase() !== 'no tags') : [];
+
+    displayProfileInfo(student, course);
+    displayRolesAndTags(currentTags);
+
+    const allLectures = lecturesRes.data || [];
+    const attendedLectures = allLectures.filter(lec => lec.attendees && lec.attendees.includes(studentId));
+    const attendedLectureIds = new Set(attendedLectures.map(l => l.NO));
+    
+    displayOverallAttendance(attendedLectures.length, allLectures.length);
+    displaySubjectAttendance(allLectures, attendedLectureIds);
+    renderItemList('recent-lectures-list', attendedLectures.sort((a,b) => b.NO - a.NO), 'lectures');
+
+    const allActivities = eventsRes.data || [];
+    const attendedActivities = allActivities.filter(act => act.attendees && act.attendees.includes(studentId));
+    renderItemList('recent-activities-list', attendedActivities.sort((a,b) => b.NO - a.NO), 'activities');
+
+    const overallPercent = allLectures.length > 0 ? (attendedLectures.length / allLectures.length) * 100 : 0;
+    calculateAndDisplayAcademicScore(overallPercent, currentTags, attendedActivities.length);
+  }
+
+  // --- INITIALIZATION & EVENT LISTENERS ---
+  document.addEventListener('DOMContentLoaded', async () => {
+    const profName = getCookie("name");
+    if (profName) {
+      const decodedName = decodeURIComponent(profName.replace(/\+/g, ' '));
+      document.getElementById('prof-name').textContent = `Prof. ${decodedName}`;
+      document.getElementById('prof-initial').textContent = decodedName.charAt(0).toUpperCase();
+    }
+    document.getElementById('logout-btn').addEventListener('click', (e) => { 
+        e.preventDefault();
+        document.cookie = "name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = 'index.html';
+    });
+    
+    const addTagBtn = document.getElementById('add-tag-btn');
+    const addTagForm = document.getElementById('add-tag-form');
+    const newTagInput = document.getElementById('new-tag-input');
+    const saveTagBtn = document.getElementById('save-tag-btn');
+    const cancelTagBtn = document.getElementById('cancel-tag-btn');
+    const tagsContainer = document.getElementById('roles-tags-list');
+
+    addTagBtn.addEventListener('click', () => {
+        addTagForm.classList.remove('hidden');
+        newTagInput.focus();
+    });
+    cancelTagBtn.addEventListener('click', () => {
+        addTagForm.classList.add('hidden');
+        newTagInput.value = '';
+    });
+    saveTagBtn.addEventListener('click', async () => {
+        const newTag = newTagInput.value.trim();
+        if (!newTag) return alert("Tag cannot be empty.");
+        if (currentTags.map(t => t.toLowerCase()).includes(newTag.toLowerCase())) return alert("This tag already exists.");
+        const updatedTags = [...currentTags, newTag];
+        
+        saveTagBtn.disabled = true;
+        saveTagBtn.textContent = 'Saving...';
+        const { error } = await supabaseAcademic.from(`${course}_students`).update({ roles: updatedTags }).eq('id', studentId);
+        saveTagBtn.disabled = false;
+        saveTagBtn.textContent = 'Save';
 
         if (error) {
-            console.error('Error fetching lectures:', error);
-            showStatusMessage('Could not load lectures. Please check the course name or try again later.');
-            return;
+            console.error('Error updating tags:', error);
+            alert('Failed to add tag. Please try again.');
+        } else {
+            addTagForm.classList.add('hidden');
+            newTagInput.value = '';
+            await loadStudentProfile(); 
         }
-
-        if (data.length === 0) {
-            showStatusMessage('No lectures found for this course.');
-            return;
-        }
-        
-        allLectures = data;
-        renderUI(course, allLectures);
-    }
-
-    // --- PDF Generation Logic ---
-    function generatePdf() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        const course = getCourse();
-        const startLecNo = parseInt(document.getElementById('start-lec').value);
-        const endLecNo = parseInt(document.getElementById('end-lec').value);
-
-        if (startLecNo > endLecNo) {
-            alert("The 'From' lecture number cannot be greater than the 'To' lecture number.");
-            return;
-        }
-
-        const lecturesToInclude = allLectures.filter(lec => lec.NO >= startLecNo && lec.NO <= endLecNo);
-
-        // --- PDF Header ---
-        doc.setFontSize(20);
-        doc.setFont("helvetica", "bold");
-        doc.text("ClassCount Lecture Report", 105, 20, { align: "center" });
-
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Course: ${course.toUpperCase()}`, 20, 30);
-        
-        const generationDate = new Date().toLocaleDateString('en-GB');
-        doc.text(`Date Generated: ${generationDate}`, 190, 30, { align: "right" });
-
-        // --- PDF Table ---
-        const tableHead = [['Lec No', 'Topic', 'Date', 'Time', 'Total Count']];
-        const tableBody = lecturesToInclude.map(lec => [
-            lec.NO,
-            lec.LECTURE,
-            lec.DATE,
-            lec.TIME,
-            Array.isArray(lec.attendees) ? lec.attendees.length : 0
-        ]);
-
-        doc.autoTable({
-            head: tableHead,
-            body: tableBody,
-            startY: 40,
-            theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229] }, // --primary-color
-        });
-
-        // --- Save the PDF ---
-        doc.save(`Lecture_Report_${course}_${startLecNo}-${endLecNo}.pdf`);
-    }
-
-
-    // --- Logout Logic ---
-    function clearAllCookies() {
-        document.cookie.split(";").forEach(c => {
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
-        });
-    }
-
-    // --- Initial Load & Authentication Check ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const course = getCourse();
-
-        if (!course) {
-            console.error("Course cookie not found. Redirecting to login.");
-            document.body.innerHTML = `<div class="status-message" style="margin: 2rem;">Authentication required. Redirecting to login page...</div>`;
-            setTimeout(() => { window.location.href = 'login.html'; }, 2500);
-            return;
-        }
-
-        // Initialize App
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearAllCookies();
-            window.location.href = 'login.html';
-        });
-
-        loadLectures(course);
     });
+    tagsContainer.addEventListener('click', async (e) => {
+        const deleteBtn = e.target.closest('.delete-tag-btn');
+        if (!deleteBtn) return;
+        const tagToDelete = deleteBtn.dataset.tag;
+        if (!confirm(`Are you sure you want to delete the tag "${tagToDelete}"?`)) return;
+        
+        const updatedTags = currentTags.filter(tag => tag !== tagToDelete);
+        deleteBtn.parentElement.style.opacity = '0.5';
+        deleteBtn.disabled = true;
+        
+        const { error } = await supabaseAcademic.from(`${course}_students`).update({ roles: updatedTags }).eq('id', studentId);
+        
+        if (error) {
+            console.error('Error deleting tag:', error);
+            alert('Failed to delete tag. Please try again.');
+            deleteBtn.parentElement.style.opacity = '1';
+            deleteBtn.disabled = false;
+        } else {
+            await loadStudentProfile();
+        }
+    });
+    
+    await loadStudentProfile(); 
+    lucide.createIcons();
+  });
 </script>
 
 </body>
